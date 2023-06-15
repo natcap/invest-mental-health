@@ -1,0 +1,200 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+
+rm(list = ls())
+
+# install.packages('FedData')
+library(FedData) # pal_nlcd()
+
+library(here)
+
+library(sf)
+library(raster)
+library(dplyr)
+library(tmap)
+
+dir.here <- here()
+
+dir.output <- paste0(dir.here, "/", "results/output/")
+```
+
+
+## read raster
+```{r}
+bou <- st_read(dsn = paste0(dir.here, "/data/cb_2019_us_county_500k_06075_clip.shp"))
+
+pop  <- raster(x = paste0(dir.here, "/data/usa_ppp_2020_UNadj_constrained_SF_proj_NoDataTo0.tif"))
+lulc <- raster(x = paste0(dir.here, "/data/nlcd_2019_land_cover_SF.tif"))
+
+supply <- raster(paste0(dir.output, "urban_nature_supply_9m2_500m_masked.tif"))
+demand <- raster(paste0(dir.output, "urban_nature_demand_9m2_500m.tif"))
+
+balance_total  <-raster(paste0(dir.output, "urban_nature_balance_totalpop_9m2_500m.tif"))
+balance_percap <-raster(paste0(dir.output, "urban_nature_balance_percapita_9m2_500m.tif"))
+
+
+crs(bou)
+crs(balance_percap)
+
+
+library(rgdal)
+bou_sp <- as_Spatial(bou)
+# crs(bou_sp) <- crs(balance_percap)
+bou_sp <- spTransform(bou_sp, CRS(proj4string(balance_percap)))
+
+crs(bou_sp)
+crs(balance_percap)
+
+balance_percap_clip <- crop(balance_percap, bou_sp, mask = T)
+
+## crop and mask
+r2 <- crop(balance_percap, extent(bou_sp))
+balance_percap_clip <- mask(balance_percap, bou_sp)
+# plot(balance_percap_clip)
+
+lulc <- mask(lulc, bou_sp)
+```
+
+
+
+## plot raster
+
+*Discrete* gradient options are "cat", "fixed", "sd", "equal", "pretty", "quantile", "kmeans", "hclust", "bclust", "fisher", "jenks", "dpih", "headtails", and "log10_pretty". 
+
+*Continuous* gradient options are "cont", "order", and "log10". The first maps the values of col to a smooth gradient, the second maps the order of values of col to a smooth gradient, and the third uses a logarithmic transformation. 
+
+
+```{r}
+p_pop <-
+  tm_shape(bou) +
+  tm_polygons(col = "gray") +
+  tm_shape(pop) +
+  tm_raster(alpha = .6, palette = "YlOrRd", style = "kmeans", title = "Count") +
+  tm_compass(type = "arrow", position = c(.83, .85)) +
+  tm_scale_bar(breaks = c(0, 1, 2), position = c(0.8, .75), text.size = .8) +
+  tm_layout(
+    main.title = "Population",
+    legend.position = c("left", "top"),
+    inner.margins = 0.1
+  )
+```
+
+
+```{r}
+# Load in the NLCD legend, colors and descriptions from package FedData. 
+
+
+legend<-pal_nlcd()
+# legend
+
+# lc_lable <- c("Open Water", "Developed Open", "Developed Low Int.", "Developed Med. Int.", 
+#               "Developed High Int.", "Barren", "Deciduous Forest", "Evergreen Forest", 
+#               "Mixed Forest", "Pasture/Hay", "Cultivated Crop", "Woody Wetland", "Emergent Wetland")
+# 
+# lc_color <- c("deepskyblue", "brown1", "brown2", "brown3", "brown4", "darkgrey", "darkolivegreen", "darkolivegreen1", 
+#                 "darkseagreen1", "goldenrod3", "darkorange", "darkorchid1", "darkorchid4")
+
+lc_lable <- legend$Class
+lc_color <- legend$Color
+lc_color <- c("#5475A8", "#FFFFFF", "#E8D1D1", 'white', 'white', 'white', "#D2CDC0", "#85C77E", "#38814E", 
+              "#D4E7B0", "#AF963C", "#DCCA8F", "#FDE9AA", "#D1D182", "#A3CC51", "#82BA9E", "#FBF65D", "#CA9146",
+              "#C8E6F8", "#64B3D5")
+
+
+p_lc <-
+  tm_shape(bou) +
+  tm_polygons(col = "white") +
+  tm_shape(lulc) +
+  tm_raster(
+    alpha = .6, 
+    style = "cat",
+    labels = lc_lable,
+    palette = lc_color, colorNA = NULL, 
+
+    title = "LULC"
+  ) +
+  tm_compass(type = "arrow", position = c(.83, .85)) +
+  tm_scale_bar(breaks = c(0, 1, 2), position = c(0.8, .75), text.size = .8) +
+  tm_layout(
+    main.title = "Nature area",
+    legend.position = c("left", "top"),
+    inner.margins = 0.1
+  )
+p_lc
+```
+
+
+```{r}
+p_s <- 
+  tm_shape(bou) +
+  tm_polygons(col="gray")+
+  tm_shape(supply) +
+  tm_raster(alpha = .6, palette = "YlGn", style = "kmeans", title = "m2/capita") +
+  tm_compass(type = "arrow", position = c(.83, .85)) +
+  tm_scale_bar(breaks = c(0, 1, 2), position = c(0.8, .75), text.size = .8) +
+  
+  # tm_credits("Data from UNA", position = c(.87, .03)) +
+  # tm_layout(title = "Supply", title.size = 1.5, title.position = c("left", "top")) +
+  tm_layout(
+    main.title = "Supply",
+    legend.position = c("left", "top"),
+    inner.margins = 0.1) 
+
+p_d <- 
+  tm_shape(bou) +
+  tm_polygons(col="gray")+
+  tm_shape(demand) +
+  tm_raster(alpha = .6, palette = "YlOrBr", style = "kmeans", title = "m2") +
+  tm_compass(type = "arrow", position = c(.83, .85)) +
+  tm_scale_bar(breaks = c(0, 1, 2), position = c(0.8, .75), text.size = .8) +
+  tm_layout(
+    main.title = "Demand",
+    legend.position = c("left", "top"),
+    inner.margins = 0.1) 
+
+
+p_balance <- 
+  tm_shape(bou) +
+  tm_polygons(col="gray")+
+  tm_shape(balance_total) +
+  tm_raster(alpha = .6, palette = "RdYlGn", midpoint = 0,
+            style = 'order', legend.reverse = T,
+            # style = "kmeans", 
+            title = "m2") +
+  tm_compass(type = "arrow", position = c(.83, .85)) +
+  tm_scale_bar(breaks = c(0, 1, 2), position = c(0.8, .75), text.size = .8) +
+  tm_layout(
+    main.title = "Balance",
+    legend.position = c("left", "top"),
+    inner.margins = 0.1) 
+
+
+p_balance_percap <- 
+  tm_shape(bou) +
+  tm_polygons(col="gray")+
+  tm_shape(balance_percap_clip) +
+  tm_raster(alpha = .6, palette = "RdYlGn", midpoint = 0, 
+            style = 'order', legend.reverse = T,
+            title = "m2/capita") +
+  tm_compass(type = "arrow", position = c(.83, .85)) +
+  tm_scale_bar(breaks = c(0, 1, 2), position = c(0.8, .75), text.size = .8) +
+  tm_layout(
+    main.title = "Balance per capita",
+    legend.position = c("left", "top"), 
+    inner.margins = 0.1) 
+
+
+ps <- tmap_arrange(p_pop, p_lc, p_balance_percap, 
+                   p_d,   p_s,  p_balance, nrow = 2)
+tmap_save(ps, filename = paste0(dir.here, "/figures/UNA.jpeg"), height=9, width=16, units="in", dpi=300)
+```
