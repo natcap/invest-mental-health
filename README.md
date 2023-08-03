@@ -29,4 +29,6 @@ Detailed description can be found in this [Google Slide](https://docs.google.com
 
 * ***nature accessibility*** ...... see [InVEST Urban Nature Access model](https://storage.googleapis.com/releases.naturalcapitalproject.org/invest-userguide/latest/en/urban_nature_access.html)
 
+<img src="nature_exposure_type_illustration.png" align="middle" height="200"/>
+
 ## Mental health
