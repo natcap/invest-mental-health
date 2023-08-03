@@ -1,5 +1,10 @@
 # InVEST mental health model
 
+<p align="center">
+  <img src="./man/images/nature_health.png"/>
+</p>
+
+
 ## General information 
 * [Mental health prototype model design doc](https://docs.google.com/document/d/1_d6IOOurUzfObgyQLN81KvM_KZz7eypWf4hYmoS7URM/edit#heading=h.5g60p2czv3bh)
 * [Data and log doc](https://docs.google.com/document/d/1h3M5kNG7UyWXREg6LEhTfY2tvIyI1dRjxHbpa8VTEEM/edit?usp=sharing)
@@ -40,11 +45,12 @@ Detailed description can be found in this [Google Slide](https://docs.google.com
 *<div align="right"> Modified from [Labib et al 2021](https://doi.org/10.1016/j.scitotenv.2021.147919) </div>*
 
 
-## Mental health
+## Mental Health
+
+<TBD ...>
 
 
-## Nature-Health
+## Nature-Health Model Integration 
 
-<p align="center">
-  <img src="./man/images/nature_health.png"/>
-</p>
+<TBD ...>
+
