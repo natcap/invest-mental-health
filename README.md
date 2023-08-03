@@ -30,7 +30,7 @@ Detailed description can be found in this [Google Slide](https://docs.google.com
 * ***nature accessibility*** ...... see [InVEST Urban Nature Access model](https://storage.googleapis.com/releases.naturalcapitalproject.org/invest-userguide/latest/en/urban_nature_access.html)
 
 <p align="center">
-  <img src="./man/images/nature_exposure_type_illustration.png" height="300"/>
+  <img src="./man/images/nature_exposure_type_illustration.png"/>
 </p>
 
 
