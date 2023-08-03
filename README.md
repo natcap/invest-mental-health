@@ -9,6 +9,9 @@
 ```
 invest-mental-health/
   |- code/ ................... R and Python scripts for preprocessing raw data
+      |- nature-availability/ 
+      |- nature-accessibility/
+      |- nature-visibility/
   |- data/ ................... raw data as examples
   |- docs/ ................... docs and slides
   |- figures/ ................ 
@@ -25,9 +28,10 @@ Detailed description can be found in this [Google Slide](https://docs.google.com
 
 * ***nature availability*** ...... the amount of nature (e.g., % of greenspace, average greenness/NDVI) near residential areas or workplaces
 
+* ***nature accessibility*** ...... see [InVEST Urban Nature Access model](https://storage.googleapis.com/releases.naturalcapitalproject.org/invest-userguide/latest/en/urban_nature_access.html)
+
 * ***nature visibility*** ...... the visible green considering topography and buildings
 
-* ***nature accessibility*** ...... see [InVEST Urban Nature Access model](https://storage.googleapis.com/releases.naturalcapitalproject.org/invest-userguide/latest/en/urban_nature_access.html)
 
 <p align="center">
   <img src="./man/images/nature_exposure_type_illustration.png"/>
