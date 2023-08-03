@@ -1,7 +1,8 @@
 # Greenness Visibility Index <img src="logo.png" align="right" height="139"/>
 
+
 <p align="center">
-  <img src="./man/images/visibility.png"/>
+  <img src="../../man/images/visibility.png", height = 450/>
 </p>
 
 *<div align="right"> Modified from [Labib et al 2021](https://doi.org/10.1016/j.scitotenv.2020.143050) </div>*
