@@ -16,12 +16,17 @@ invest-mental-health/
       |- nature-availability/ 
       |- nature-accessibility/
       |- nature-visibility/
-  |- data/ ................... raw data as examples
-  |- docs/ ................... docs and slides
-  |- figures/ ................ 
+  |- data/ 
+      |- raw ....................... raw data
+      |- intermediate .............. intermediate output
+      |- output
+      |- para_nature_health  ....... parameters for modeling nature-health relation
+      |- example ................... example data for modeling
+  |- docs/ ......................... docs and slides
+  |- figures/ ......................
   |- processing/
   |- results/
-  |- .gitignore .............. tells git not to track certain files
+  |- .gitignore .................... tells git not to track certain files
 ```
 
 ## Nature Exposure
