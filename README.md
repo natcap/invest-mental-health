@@ -62,3 +62,9 @@ Detailed description can be found in this [Google Slide](https://docs.google.com
 
 <TBD ...>
 
+
+## Key References
+- Bratman, G.N., Anderson, C.B., Berman, M.G., Cochran, B., Vries, S. de, Flanders, J., Folke, C., Frumkin, H., Gross, J.J., Hartig, T., Kahn, P.H., Kuo, M., Lawler, J.J., Levin, P.S., Lindahl, T., Meyer-Lindenberg, A., Mitchell, R., Ouyang, Z., Roe, J., Scarlett, L., Smith, J.R., Bosch, M. van den, Wheeler, B.W., White, M.P., Zheng, H., Daily, G.C., 2019. [Nature and mental health: An ecosystem service perspective](https://advances.sciencemag.org/content/5/7/eaax0903). ***Science Advances*** 5, eaax0903. https://doi.org/10.1126/sciadv.aax0903
+- Remme, R.P., Frumkin, H., Guerry, A.D., King, A.C., Mandle, L., Sarabu, C., Bratman, G.N., Giles-Corti, B., Hamel, P., Han, B., Hicks, J.L., James, P., Lawler, J.J., Lindahl, T., Liu, H., Lu, Y., Oosterbroek, B., Paudel, B., Sallis, J.F., Schipperijn, J., Sosič, R., Vries, S. de, Wheeler, B.W., Wood, S.A., Wu, T., Daily, G.C., 2021. [An ecosystem service perspective on urban nature, physical activity, and health](https://www.pnas.org/content/118/22/e2018472118). ***PNAS*** 118. https://doi.org/10.1073/pnas.2018472118
+
+
