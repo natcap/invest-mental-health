@@ -1,0 +1,116 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Input
+
+
+### Reclassify nature map
+```{r include=FALSE}
+
+# remotes::install_git("https://github.com/STBrinkmann/GVI")
+
+### Load libraries
+library(terra) # handling raster data
+library(sf)    # handling shapefiles
+library(GVI)   # computing the VGVI
+library(dplyr) # data wrangeling
+
+# Folder where the data has been downloaded ## Vancouver_Sample_Data
+workdir <- "F:/VGVI_example/"
+
+
+
+# pt <- data.frame(
+#                  place=c("Canada"),
+#                  longitude=c(-123.121841),
+#                  latitude=c(49.282165))
+# pt_sf = st_as_sf(DT, coords = c("longitude", "latitude"), 
+#                  crs = 4326, agr = "constant")
+# plot(pt_sf)
+# aoi <- sf::st_buffer(pt_sf, dist = 50, endCapStyle = "SQUARE")
+aoi <- st_read(dsn = file.path(workdir, "aoi_sample.shp"))
+plot(aoi) 
+
+
+
+# Load DTM, DSM and Land Cover
+dtm <- rast(file.path(workdir, "Vancouver_DTM_1m.tif")) %>% crop(., aoi)
+dsm <- rast(file.path(workdir, "Vancouver_DSM_1m.tif")) %>% crop(., aoi)
+lulc <- rast(file.path(workdir, "Vancouver_LULC_2m.tif")) %>% crop(., aoi)
+
+# Reclassify values for the binary greenspace mask
+
+rcl_mat <- matrix(c(1, 6, 0,    # no vegetation
+                    6, 13, 1,   # vegetation and water
+                    13, 14, 0), # no vegetation
+                  ncol = 3, byrow = TRUE)
+
+greenspace <- classify(lulc, rcl = rcl_mat, include.lowest = TRUE)
+writeRaster(greenspace, file.path(workdir, "Vancouver_GS_2m.tif"), overwrite=TRUE)
+```
+
+
+
+### observer locations
+```{r}
+# Useful Landcover Classification codes
+useful_codes <- c(2:11, 13)
+
+# Get XY-coordinates
+xy_coords <- xyFromCell(lulc, which(values(lulc) %in% useful_codes)) %>% 
+  as_tibble()
+
+# Convert to shapefile
+vancouver_2m_sf <- st_as_sf(xy_coords, coords = c("x", "y"), crs = 26910)
+```
+
+
+
+## VGVI
+
+```{r}
+library(parallel)
+detectCores()
+# Set your cores here!
+cores <- 6
+
+# Calculate VGVI for all 16,741,566 points
+vancouver_vgvi <- vgvi_from_sf(observer = vancouver_2m_sf,
+                                 dsm_rast = dsm, 
+                                 dtm_rast = dtm, 
+                                 greenspace_rast = greenspace,
+                                 max_distance = 550, observer_height = 1.7,
+                                 raster_res = 2,
+                                 m = 1, b = 3, mode = "exponential",
+                                 cores = cores, 
+                                 progress = TRUE)
+```
+
+
+
+## VGVI to Raster
+```{r}
+# We need an AOI shapefile first
+aoi <- greenspace >= 0
+aoi <- sf::st_as_sf(terra::as.polygons(aoi))
+
+vgvi_idw <- GVI::sf_to_rast(observer = vancouver_vgvi, v = "VGVI",
+                            aoi = aoi,
+                            max_distance = 400, n = 10,
+                            raster_res = 10, beta = 2,
+                            cores = 22, progress = TRUE)
+
+
+writeRaster(vgvi_idw, file.path(workdir, "Vancouver_vgvi_idw.tif"), overwrite=TRUE)
+
+plot(vgvi_idw)
+```
+
