@@ -70,7 +70,7 @@ df_ctr_dx %>%
   scale_y_discrete(limits=rev) +
   theme_bw()
 
-ggsave(filename = './figures/mental_cost.png', plot = last_plot(), width = 7, height = 10, units = 'in', dpi = 300, bg = NULL)
+ggsave(filename = './figures/mental_cost.png', plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
 ```
 
 
@@ -99,6 +99,6 @@ df_select %>%
   scale_y_discrete(limits=rev) +
   theme_bw()
 
-ggsave(filename = './figures/mental_cost_select.png', plot = last_plot(), width = 7, height = 10, units = 'in', dpi = 300, bg = NULL)
+ggsave(filename = './figures/mental_cost_select.png', plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
 ```
 
