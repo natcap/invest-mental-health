@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 rm(list = ls())
 
 # install.packages('FedData')
-library(FedData) # pal_nlcd()
+# library(FedData) # pal_nlcd()
 
 library(here)
 
