@@ -30,11 +30,32 @@ names(d)
 unique(d$dx_broad) %>% sort()
 
 
+unique(d$cost_broad_type)
+unique(d$cost_type)
+unique(d$cost_unit)
+
+
+unique(d$cost_broad_type)
+
+cost_broad_type_i <- "total societal cost"
+cost_unit_i       <- "mean cost per patient"
+
+##' NOTE: there are multiple rows even after specify a cost type and unit, this is because there are 
+##'   more detailed mental disorder sub-classifications, which are not included in the shared data. 
+
+
+# d_check <- d %>%
+#   filter(cost_broad_type == cost_broad_type_i,
+#          cost_unit == cost_unit_i) %>%
+#   as.data.frame()
+
 
 ## filter data
 df <- d %>%
   filter(!dx_broad %in% c("any mental disorder"), 
          str_detect(dx_broad, ',', negate = T),
+         cost_broad_type == cost_broad_type_i,
+         cost_unit == cost_unit_i,
          !is.na(Price_USD_PPP)) %>%
   select(1:cost_type, Price_USD, Price_USD_PPP, Price_2018_adj,
          -c(study_title, site, cost_specific_type))
@@ -49,8 +70,9 @@ cat('\n Unique countries:', length(unique(df$country)))
 
 ```{r - plot as Christensen}
 
+
 df_ctr_dx <- df %>%
-  group_by(country, dx_broad) %>%
+  group_by(country, dx_broad, cost_broad_type) %>%
   summarise_at(c('Price_USD', 'Price_USD_PPP', 'Price_2018_adj'), mean, na.rm = TRUE) %>%
   as.data.frame()
 
@@ -58,6 +80,7 @@ n_dx <- length(unique(df_ctr_dx$dx_broad))
 
 
 df_ctr_dx %>%
+  filter(cost_broad_type == cost_broad_type_i) %>%
   ggplot(aes(y = country, x = Price_USD_PPP)) + 
   geom_point(
     alpha = 0.8,
@@ -68,6 +91,7 @@ df_ctr_dx %>%
   scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) +
   scale_y_discrete(limits=rev) +
+  xlab('Societal cost per patient in USD PPP 2018') +
   theme_bw()
 
 ggsave(filename = './figures/mental_cost.png', plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
@@ -76,13 +100,12 @@ ggsave(filename = './figures/mental_cost.png', plot = last_plot(), width = 7, he
 
 
 ```{r - relevant to InVEST}
-df_select <- df %>%
+
+df_select <- df_ctr_dx %>%
   filter(dx_broad %in% c("behavioural disorders", 
                          "mood disorders", 
                          # "personality disorders", 
                          "schizophrenia")) %>%
-  group_by(country, dx_broad) %>%
-  summarise_at(c('Price_USD', 'Price_USD_PPP', 'Price_2018_adj'), mean, na.rm = TRUE) %>%
   as.data.frame() 
 
 
@@ -97,8 +120,9 @@ df_select %>%
   scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) +
   scale_y_discrete(limits=rev) +
+  xlab('Societal cost per patient in USD PPP 2018') +
   theme_bw()
 
-ggsave(filename = './figures/mental_cost_select.png', plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
+ggsave(filename = './figures/mental_cost_select_2.png', plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
 ```
 
