@@ -104,7 +104,7 @@ cbar.set_ticks(ticks)
 cbar.ax.set_yticklabels([f"{t:.1f}" for t in ticks])
 
 # Title and labels
-plt.title("Preventable Depression (PD_i) - Risk Map", fontsize=12)
+plt.title("Preventable Depression (PD)", fontsize=12)
 plt.xlabel("Longitude", fontsize=10)
 plt.ylabel("Latitude", fontsize=10)
 
