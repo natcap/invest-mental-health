@@ -73,14 +73,14 @@ class InvestGUI:
         ]
 
         default_paths = [
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_06_tract_500k.shp",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\population\usa_ppp_2020_UNadj_constrained_SF_proj_setnull.tif",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\ndvi\ndvi_s2_075_2019_10m_v2.tif",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\risk\baseline_incidence_rate_06075.shp",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
-            r"C:\Users\74007\Downloads\Stanford University\output_result"
+            r"G:\Shared drives\invest-health\data\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
+            r"G:\Shared drives\invest-health\data\0_input_data\aoi\cb_2019_06_tract_500k.shp",
+            r"G:\Shared drives\invest-health\data\0_input_data\population\usa_ppp_2020_UNadj_constrained_SF_proj_setnull.tif",
+            r"G:\Shared drives\invest-health\data\0_input_data\ndvi\ndvi_s2_075_2019_10m_v2.tif",
+            r"G:\Shared drives\invest-health\data\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
+            r"G:\Shared drives\invest-health\data\0_input_data\risk\baseline_incidence_rate_06075_2019.shp",
+            r"G:\Shared drives\invest-health\data\0_input_data\health_effect_size_table.xlsx",
+            r"G:\Shared drives\invest-health\data\output_result"
         ]
 
         for i in range(8):
