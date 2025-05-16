@@ -189,7 +189,7 @@ def plot_ndvi_vs_negoal_gradient(ndvi_resampled_path, aoi_gdf, ne_goal_value):
 
     cmap = plt.cm.RdYlGn  # Red-White-Green gradient, smoother
 
-    fig, ax = plt.subplots(figsize=(6, 3), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(6,5), constrained_layout=True)
     ax.set_aspect('equal')
     ax.set_xlim(aoi_gdf.total_bounds[[0, 2]])
     ax.set_ylim(aoi_gdf.total_bounds[[1, 3]])
@@ -203,15 +203,16 @@ def plot_ndvi_vs_negoal_gradient(ndvi_resampled_path, aoi_gdf, ne_goal_value):
         linewidth=0.8
     )
 
-    # 色条设置
+    # colorbar
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     cbar = fig.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
-    cbar.set_label("NDVI Deviation from NE_goal", fontsize=10)
+    # cbar.set_label("NDVI Deviation from NE_goal", fontsize=10)
     cbar.set_ticks(np.linspace(-max_abs, max_abs, 7))
     cbar.ax.set_yticklabels([f"{t:+.1f}" for t in np.linspace(-max_abs, max_abs, 7)], fontsize=9)
 
-    # 样式统一
-    ax.set_title(f"{ne_goal_value:.2f} = NE_goal vs NDVI", fontsize=12)
+    # style
+    ax.set_title("NDVI_target – NDVI_baseline", fontsize=12)
+    # ax.set_title(f"{ne_goal_value:.2f} = NE_goal vs NDVI", fontsize=12)
     ax.set_xticks([])
     ax.set_yticks([])
     ax.set_xlabel("")

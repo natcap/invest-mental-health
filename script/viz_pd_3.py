@@ -2,6 +2,8 @@ import rasterio
 import rasterio.mask
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from matplotlib.colors import Normalize
+from matplotlib.colors import TwoSlopeNorm
 import geopandas as gpd
 import numpy as np
 import os
@@ -36,9 +38,18 @@ def plot_pd_map_v3(PD_masked, PD_meta, aoi_gdf, figures_dir, output_name="PD_ris
         breakpoints = [breakpoints[0] - 1e-6, breakpoints[0] + 1e-6]
 
     num_bins = len(breakpoints) - 1
+    vmin = np.min(breakpoints)
+    vmax = np.max(breakpoints)
     ncolors = num_bins + 2  # Ensure enough colors for 'extend="both"'
-    cmap = plt.cm.get_cmap("RdBu", ncolors)
-    norm = mcolors.BoundaryNorm(breakpoints, ncolors=ncolors, extend="both")
+    cmap = plt.cm.Blues
+    norm = Normalize(vmin=np.min(breakpoints), vmax=np.max(breakpoints))
+    print(PD_flat)
+    # vmin = np.min(PD_flat)
+    # vmax = np.max(PD_flat)
+    # center = 0
+    # norm = Normalize(vmin=vmin, vmax=vmax)
+    # cmap = plt.cm.coolwarm
+
 
     # Define extent
     pd_extent = [
@@ -49,17 +60,24 @@ def plot_pd_map_v3(PD_masked, PD_meta, aoi_gdf, figures_dir, output_name="PD_ris
     ]
 
     # Plotting
-    fig, ax = plt.subplots(figsize=(6, 3), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(6,5), constrained_layout=True)
     ax.set_aspect('equal')
     im = ax.imshow(PD_masked[0], cmap=cmap, norm=norm, extent=pd_extent, origin="upper")
     aoi_gdf.boundary.plot(ax=ax, edgecolor="black", linewidth=1.0)
     print("PD Plot Extent:", pd_extent)
     # color bar
-    cbar = fig.colorbar(im, ax=ax, orientation="vertical", fraction=0.046, pad=0.04, extend='neither')
-    cbar.set_label("PD_i (Quantile Bins)", fontsize=10)
-    cbar.set_ticks(breakpoints)
-    cbar.set_ticklabels([f"{b:.1f}" for b in breakpoints])
-    cbar.ax.tick_params(labelsize=9)
+    # cbar = fig.colorbar(im, ax=ax, orientation="vertical", fraction=0.046, pad=0.04, extend='neither')
+    # cbar.set_label("PD_i (Quantile Bins)", fontsize=10)
+    # cbar.set_ticks(breakpoints)
+    # cbar.set_ticklabels([f"{b:.1f}" for b in breakpoints])
+    # cbar.ax.tick_params(labelsize=9)
+
+
+    cbar = fig.colorbar(im, ax=ax, orientation="vertical", fraction=0.046, pad=0.04)
+
+    tick_values = np.linspace(vmin, vmax, 6)
+    cbar.set_ticks(tick_values)
+    cbar.set_ticklabels([f"{v:.1f}" for v in tick_values])
 
     # format
     ax.set_title("Preventable Depression Cases", fontsize=12)

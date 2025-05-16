@@ -10,7 +10,7 @@ def calculate_pd_layer(
         pop_raster_path: str,
         rr: float,
         NE_goal: float,
-        baseline_risk: np.ndarray,
+        baseline_risk_rate: np.ndarray,
         output_dir: str = "."
 ) -> dict:
     """
@@ -27,7 +27,7 @@ def calculate_pd_layer(
         pop_raster_path: Path to population density raster (geotiff)
         rr: Risk ratio (RR_0.1NE) from health studies
         NE_goal: Target NDVI value for health benefit
-        baseline_risk: Baseline disease prevalence raster (must match NDVI dimensions)
+        baseline_risk_rate: Baseline disease prevalence raster (must match NDVI dimensions)
         output_dir: Output directory path (default: current directory)
 
     Returns:
@@ -55,9 +55,9 @@ def calculate_pd_layer(
         ndvi_data[ndvi_data < 0] = np.nan
 
         # Validate baseline risk dimensions
-        if baseline_risk.shape != ndvi_data.shape:
+        if baseline_risk_rate.shape != ndvi_data.shape:
             raise ValueError(
-                f"Baseline risk shape {baseline_risk.shape} "
+                f"Baseline risk shape {baseline_risk_rate.shape} "
                 f"doesn't match NDVI {ndvi_data.shape}"
             )
     except Exception as e:
@@ -104,7 +104,7 @@ def calculate_pd_layer(
     # -----------------------------
     # 5. Health Impact Calculation
     # -----------------------------
-    PD_i = PF_i * baseline_risk * population_data
+    PD_i = PF_i * baseline_risk_rate * population_data
 
     # -----------------------------
     # 6. Output Generation

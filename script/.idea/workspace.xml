@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="02fdf7dc-6495-4311-8951-96e63cc8d2e3" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code/mental-health-cost.Rmd" beforeDir="false" afterPath="$PROJECT_DIR$/../code/mental-health-cost.Rmd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/Gui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NDVI_PW.py" beforeDir="false" afterPath="$PROJECT_DIR$/NDVI_PW.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tree_Cover.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tree_Cover.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/calculate_pd_layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/calculate_pd_layer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/viz_pd_1.py" beforeDir="false" afterPath="$PROJECT_DIR$/viz_pd_1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/viz_pd_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/viz_pd_3.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2wmx8XKMUfYRcJV7n8PBTGGGv46" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.Gui.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-348a24fa61fa-5312c7369657-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.23774.444" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="02fdf7dc-6495-4311-8951-96e63cc8d2e3" name="Changes" comment="" />
+      <created>1746660391856</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1746660391856</updated>
+    </task>
+    <servers />
+  </component>
+</project>

@@ -60,7 +60,7 @@ def plot_landcover(dataframe, aoi_shapefile, column, title, return_fig=False):
         aoi_shapefile = aoi_shapefile.copy()
         aoi_shapefile[column] = dataframe[column]
 
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(6, 5))
         aoi_shapefile.plot(column=column, cmap="viridis", legend=True, ax=ax)
         ax.set_title(title)
         ax.set_xlabel("Longitude")

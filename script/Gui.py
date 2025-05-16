@@ -10,7 +10,7 @@ class InvestGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Invest_Mental_Health model")
-        self.root.geometry("1300x850")
+        self.root.geometry("1920x1080")
         self.run_count = 0
 
         self.x_lowess = None
@@ -84,17 +84,17 @@ class InvestGUI:
         ]
 
         for i in range(8):
-            label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="e")
+            label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="e",font=("Arial", 12))
             label.grid(row=i, column=0, sticky="e", padx=5, pady=5)
 
 ######### Edit entry dialog length##########
-            entry = tk.Entry(self.right_input_frame, width=120)
+            entry = tk.Entry(self.right_input_frame, width=130,font=("Arial", 12))
 ######### Edit entry dialog length##########
             entry.grid(row=i, column=1, padx=5, pady=5, sticky="we")
             entry.insert(0, default_paths[i])
             self.input_entries.append(entry)
 
-            browse_btn = tk.Button(self.right_input_frame, text="Browse", command=lambda e=entry, i=i: self.browse_path(e, self.input_labels[i]))
+            browse_btn = tk.Button(self.right_input_frame, text="Browse", font=("Arial", 12),command=lambda e=entry, i=i: self.browse_path(e, self.input_labels[i]))
             browse_btn.grid(row=i, column=2, padx=5, pady=5)
 
         self.right_input_frame.grid_columnconfigure(1, weight=1)
@@ -218,8 +218,8 @@ class InvestGUI:
             fig_widget = self.slider_canvas.get_tk_widget()
             fig_width = fig_widget.winfo_width()
 
-            if fig_width > 200:  # 避免太小
-                self.slider.config(length=int(fig_width * 0.9))  # 比例可调
+            if fig_width > 200:
+                self.slider.config(length=int(fig_width * 0.9))
             else:
                 # fallback: 用 middle frame 的宽度
                 fallback_width = self.right_plot_frame_middle.winfo_width()
@@ -260,7 +260,7 @@ class InvestGUI:
         keys = list(hist_dict.keys())
         values = list(hist_dict.values())
 
-        fig, ax = plt.subplots(figsize=(6, 3))
+        fig, ax = plt.subplots(figsize=(6, 5))
         ax.bar(keys, values, width=2, color="steelblue", edgecolor="black")
         ax.set_title("PD_i × 1000 Histogram")
         ax.set_xlabel("PD_i × 1000")
@@ -272,6 +272,6 @@ class InvestGUI:
 if __name__ == "__main__":
     root = tk.Tk()
     # root.geometry("1400x1200")
-    root.state("zoomed")
+    # root.state("zoomed")
     app = InvestGUI(root)
     root.mainloop()

@@ -44,7 +44,7 @@ def plot_pd_map_v1(PD_raster_path, aoi_gdf, return_fig=False):
         PD_meta["transform"][5]
     ]
 
-    fig, ax = plt.subplots(figsize=(6, 5))
+    fig, ax = plt.subplots(figsize=(8, 4))
     im = ax.imshow(PD_masked[0], cmap=cmap, norm=norm, extent=pd_extent, origin="upper")
     aoi_gdf.boundary.plot(ax=ax, edgecolor="black", linewidth=1.2)
 
