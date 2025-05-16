@@ -15,21 +15,19 @@
 ## Directory structure
 ```
 invest-mental-health/
-  |- code/ ................... R and Python scripts for preprocessing raw data
-      |- nature-availability/ 
-      |- nature-accessibility/
-      |- nature-visibility/
-  |- data/ 
-      |- raw ....................... raw data
-      |- intermediate .............. intermediate output
-      |- output
-      |- para_nature_health  ....... parameters for modeling nature-health relation
-      |- example ................... example data for modeling
-  |- docs/ ......................... docs and slides
-  |- figures/ ......................
-  |- processing/
-  |- results/
-  |- .gitignore .................... tells git not to track certain files
+  ├── code/
+      ├── nature-availability/ 
+      ├── nature-accessibility/
+      ├── nature-visibility/
+  ├── data/ 
+      ├── raw
+      ├── intermediate
+      ├── output
+      ├── para_nature_health            # parameters for modeling nature-health relation
+      ├── example                       # example data for modeling
+  ├── docs/
+  ├── figures/
+
 ```
 
 ## Nature Exposure
