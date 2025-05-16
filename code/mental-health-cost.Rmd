@@ -12,6 +12,11 @@ library(dplyr)
 library(stringr)
 library(ggplot2)
 require(scales) # to access break formatting functions
+
+
+dir.cost <- './data/cost/'
+
+today <- format(Sys.time(), "%Y%m%d"); today
 ```
 
 
@@ -21,9 +26,11 @@ require(scales) # to access break formatting functions
   Christensen MK et al (2020). The cost of mental disorders: a systematic review. Epidemiology and Psychiatric Sciences 29, e161, 1–8. https://doi.org/10.1017/ S204579602000075X
   
 ```{r}
-f <- './data/Christensen_et_al_2020/data-full.xlsx'
+f <- paste0(dir.cost, 'Christensen_et_al_2020/', 'data-full.xlsx') # simplified data shared online 
+# f <- paste0(dir.cost, 'Christensen_et_al_2020/', '200205_SR.xlsx') # detailed data shared by John McGrath
 
-d <- readxl::read_excel(f) %>%
+
+d <- readxl::read_excel(f, col_types = "text") %>%
   rename('Price_2018_adj' = '2018_Price (inflation adjusted)')
 
 names(d)
@@ -35,19 +42,22 @@ unique(d$cost_type)
 unique(d$cost_unit)
 
 
-unique(d$cost_broad_type)
-
+## select data for later use
 cost_broad_type_i <- "total societal cost"
 cost_unit_i       <- "mean cost per patient"
 
+
+## check the data
+d_check <- d %>%
+  filter(cost_broad_type == cost_broad_type_i,
+         cost_unit == cost_unit_i) %>%
+  as.data.frame()
+
 ##' NOTE: there are multiple rows even after specify a cost type and unit, this is because there are 
-##'   more detailed mental disorder sub-classifications, which are not included in the shared data. 
+##'   more detailed mental disorder sub-classifications, which are not included in the shared data "data-full.xlsx". 
+##' NEW: The detailed data "200205_SR.xlsx" shared by John McGrath has more information. 
 
 
-# d_check <- d %>%
-#   filter(cost_broad_type == cost_broad_type_i,
-#          cost_unit == cost_unit_i) %>%
-#   as.data.frame()
 
 
 ## filter data
@@ -55,13 +65,25 @@ df <- d %>%
   filter(!dx_broad %in% c("any mental disorder"), 
          str_detect(dx_broad, ',', negate = T),
          cost_broad_type == cost_broad_type_i,
-         cost_unit == cost_unit_i,
-         !is.na(Price_USD_PPP)) %>%
-  select(1:cost_type, Price_USD, Price_USD_PPP, Price_2018_adj,
-         -c(study_title, site, cost_specific_type))
+         cost_unit == cost_unit_i) %>%
+  # filter(!is.na(Price_USD_PPP)) %>%
+  # select(1:cost_type, 
+  #        # Price_USD, 
+  #        # Price_USD_PPP, 
+  #        Price_2018_adj,
+  #        -c(study_title, site, cost_specific_type)) %>%
+  mutate(Price_USD_PPP = as.numeric(Price_USD_PPP),
+         Price_2018_adj = as.numeric(Price_2018_adj)) %>%
+  select(1:cost_type, everything())
   
-cat('\n Unique mental health indicators:\n')
-unique(df$dx_broad) %>% sort()
+
+unique(df$dx_broad) %>% sort() %>%
+  paste(., collapse = ', ') %>%
+  cat('\nUnique mental health indicators:\n', .)
+
+unique(df$dx_type) %>% sort() #%>%
+  # paste(., collapse = ', ') %>%
+  # cat('\nUnique mental health indicators:\n', .)
 
 
 cat('\n Unique countries:', length(unique(df$country)))
@@ -72,7 +94,7 @@ cat('\n Unique countries:', length(unique(df$country)))
 
 
 df_ctr_dx <- df %>%
-  group_by(country, dx_broad, cost_broad_type) %>%
+  group_by(country, dx_broad, cost_broad_type, cost_unit) %>%
   summarise_at(c('Price_USD', 'Price_USD_PPP', 'Price_2018_adj'), mean, na.rm = TRUE) %>%
   as.data.frame()
 
@@ -94,13 +116,13 @@ df_ctr_dx %>%
   xlab('Societal cost per patient in USD PPP 2018') +
   theme_bw()
 
-ggsave(filename = './figures/mental_cost.png', plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
+f <- paste0('./figures/', 'mental_cost_', today, '.png'); f
+ggsave(f, plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
 ```
 
 
 
 ```{r - relevant to InVEST}
-
 df_select <- df_ctr_dx %>%
   filter(dx_broad %in% c("behavioural disorders", 
                          "mood disorders", 
@@ -109,6 +131,23 @@ df_select <- df_ctr_dx %>%
   as.data.frame() 
 
 
+
+df_mood <- df_select %>%
+  filter(dx_broad == "mood disorders") %>%
+  select(-c(Price_USD, Price_2018_adj)) %>%
+  mutate(year = 2018) %>%
+  as.data.frame()
+
+
+## save data in csv
+f <- paste0(dir.cost, 'data_cost_mental_health.csv'); f
+readr::write_csv(df_mood, f)
+
+```
+
+
+
+```{r - relevant to InVEST}
 df_select %>%
   ggplot(aes(y = country, x = Price_USD_PPP)) + 
   geom_point(
