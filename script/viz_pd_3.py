@@ -60,7 +60,7 @@ def plot_pd_map_v3(PD_masked, PD_meta, aoi_gdf, figures_dir, output_name="PD_ris
     ]
 
     # Plotting
-    fig, ax = plt.subplots(figsize=(6,5), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(6,4.5), constrained_layout=True)
     ax.set_aspect('equal')
     im = ax.imshow(PD_masked[0], cmap=cmap, norm=norm, extent=pd_extent, origin="upper")
     aoi_gdf.boundary.plot(ax=ax, edgecolor="black", linewidth=1.0)

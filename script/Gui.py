@@ -19,8 +19,11 @@ class InvestGUI:
         self.slider_canvas = None
 
         # Left panel
-        self.left_frame = tk.Frame(root, width=300)
+        self.left_frame = tk.Frame(root, width=300, height=600)
         self.left_frame.grid(row=0, column=0, sticky="ns", padx=(10, 5), pady=10)
+        self.left_frame.grid_propagate(False)  # Prevent resizing by content
+
+
 
         self.separator = tk.Frame(root, width=2, bg="gray", relief="sunken")
         self.separator.grid(row=0, column=1, sticky="ns")
@@ -49,11 +52,24 @@ class InvestGUI:
         root.grid_rowconfigure(0, weight=1)
 
         # Run status and button
-        self.log_label = tk.Label(self.left_frame, text="Status: Waiting to run", anchor="w", justify="left")
+        # self.log_label = tk.Label(self.left_frame, text="Status: Waiting to run", anchor="w", justify="left")
+        self.log_label = tk.Label(self.left_frame, text="Status: Waiting to run", wraplength=280, anchor="w", justify="left")
         self.log_label.pack(fill="x", pady=(0, 20))
 
-        self.run_button = tk.Button(self.left_frame, text="RUN", command=self.handle_run, bg="green", fg="white", font=("Arial", 14))
-        self.run_button.pack(side="bottom", pady=20, fill="x")
+        # RUN button first (appears at the very bottom)
+        self.run_button = tk.Button(
+            self.left_frame, text="RUN", command=self.handle_run,
+            bg="green", fg="white", font=("Arial", 14)
+        )
+        self.run_button.pack(side="bottom", pady=(10, 5), fill="x")
+
+        # Back button above RUN
+        self.back_button = tk.Button(
+            self.left_frame, text="Back", command=self.handle_back,
+            bg="orange", fg="black", font=("Arial", 12)
+        )
+        self.back_button.pack(side="bottom", pady=(0, 10), fill="x")
+
 
         # Input section
         self.right_input_frame = tk.Frame(self.right_frame)
@@ -111,6 +127,8 @@ class InvestGUI:
     def handle_run(self):
         self.run_count += 1
         self.log_label.config(text=f"Status: Running step {self.run_count}...")
+        # self.log_label = tk.Label(self.left_frame, text=f"Status: Running step {self.run_count}...", wraplength=280, anchor="w",
+        #                           justify="left")
 
         if self.run_count == 1:
             self.paths = [e.get() for e in self.input_entries]
@@ -146,6 +164,9 @@ class InvestGUI:
 
             self.ne_goal = ne_goal
             self.log_label.config(text=f"NE goal selected: {ne_goal:.3f}")
+            # self.log_label = tk.Label(self.left_frame, text=f"NE goal selected: {ne_goal:.3f}", wraplength=280,
+            #                           anchor="w",
+            #                           justify="left")
 
         elif self.run_count == 2:
             # Clear old figures in all three sections
@@ -169,7 +190,10 @@ class InvestGUI:
             self.right_plot_frame_middle.configure(bg="white")
             self.right_plot_frame_bottom.configure(bg="white")
 
-            self.log_label.config(text="PD maps generated and cost curve plotted.")
+            self.log_label.config(text="Maps and curve generated.")
+            # self.log_label = tk.Label(self.left_frame, text="PD maps and cost curve generated.", wraplength=280,
+            #                           anchor="w",
+            #                           justify="left")
 
     def setup_slider_area(self, fig):
         self.slider_canvas = FigureCanvasTkAgg(fig, master=self.right_plot_frame_middle)
@@ -207,7 +231,7 @@ class InvestGUI:
         self.right_plot_frame_middle.after(100, self.update_slider_length)
 
 
-        self.ndvi_display = tk.Label(self.right_plot_frame_bottom, text="NDVI = ?", font=("Arial", 12))
+        self.ndvi_display = tk.Label(self.right_plot_frame_bottom, text="Drag the slider", font=("Arial", 12))
         self.ndvi_display.pack(pady=5)
 
         confirm_btn = tk.Button(self.right_plot_frame_bottom, text="Confirm", command=self.confirm_ndvi)
@@ -221,7 +245,7 @@ class InvestGUI:
             if fig_width > 200:
                 self.slider.config(length=int(fig_width * 0.9))
             else:
-                # fallback: 用 middle frame 的宽度
+
                 fallback_width = self.right_plot_frame_middle.winfo_width()
                 self.slider.config(length=int(fallback_width * 0.8))
         except Exception as e:
@@ -234,13 +258,16 @@ class InvestGUI:
         if hasattr(self, "vline"):
             self.vline.set_xdata([cover])
             self.slider_canvas.draw()
-        self.ndvi_display.config(text=f"NDVI = {ndvi_val:.3f}")
+        self.ndvi_display.config(text=f"Tree cover target: {cover:.1f}% → Corresponding NDVI: {ndvi_val:.3f}")
 
 
     def confirm_ndvi(self):
         cover = self.slider_var.get()
         self.ne_goal = float(np.interp(cover, self.x_lowess, self.y_lowess))
         self.log_label.config(text=f"Confirmed NE_goal: {self.ne_goal:.3f}")
+        # self.log_label = tk.Label(self.left_frame, text=f"Confirmed NE_goal: {self.ne_goal:.3f}", wraplength=280,
+        #                           anchor="w",
+        #                           justify="left")
 
     def display_figure(self, fig, location="middle", side="left"):
         frame = {
@@ -256,18 +283,28 @@ class InvestGUI:
         widget = canvas.get_tk_widget()
         widget.grid(row=0, column=col, padx=10, pady=10, sticky="nsew")
 
-    def plot_histogram_from_dict(self, hist_dict):
-        keys = list(hist_dict.keys())
-        values = list(hist_dict.values())
 
-        fig, ax = plt.subplots(figsize=(6, 5))
-        ax.bar(keys, values, width=2, color="steelblue", edgecolor="black")
-        ax.set_title("PD_i × 1000 Histogram")
-        ax.set_xlabel("PD_i × 1000")
-        ax.set_ylabel("Count")
-        ax.grid(True)
+    def handle_back(self):
+        if self.run_count == 2:
+            self.run_count = 1
+            # clear images
+            for section in [self.right_plot_frame_top, self.right_plot_frame_middle, self.right_plot_frame_bottom]:
+                for widget in section.winfo_children():
+                    widget.destroy()
 
-        return fig
+            # Return to last step
+            ne_goal, ndvi_fig, tree_fig, slider_fig, self.x_lowess, self.y_lowess, self.aoi_adm2, self.ndvi_resampled_path = run_ndvi_tree_analysis(
+                *self.paths)
+            self.vline = slider_fig.axes[0].axvline(30.0, color='gray', linestyle='--')
+            self.display_figure(ndvi_fig, location="top", side="left")
+            self.display_figure(tree_fig, location="top", side="right")
+            self.display_figure(slider_fig, location="middle")
+            self.setup_slider_area(slider_fig)
+            self.ne_goal = ne_goal
+            self.log_label.config(text="Returned to NE_goal selection.")
+            # self.log_label = tk.Label(self.left_frame, text="Returned to NE_goal selection view.", wraplength=280,
+            #                           anchor="w",
+            #                           justify="left")
 
 if __name__ == "__main__":
     root = tk.Tk()

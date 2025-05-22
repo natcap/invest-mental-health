@@ -178,7 +178,7 @@ def plot_ndvi_vs_negoal_gradient(ndvi_resampled_path, aoi_gdf, ne_goal_value):
 
     # Add deviation from NE_goal
     aoi_gdf = aoi_gdf.copy()
-    aoi_gdf["ndvi_delta"] = np.array(ndvi_means) - ne_goal_value
+    aoi_gdf["ndvi_delta"] = ne_goal_value - np.array(ndvi_means)
 
     # Set color normalization centered at 0 (deviation = 0)
     delta_min = np.nanmin(aoi_gdf["ndvi_delta"])
@@ -189,7 +189,7 @@ def plot_ndvi_vs_negoal_gradient(ndvi_resampled_path, aoi_gdf, ne_goal_value):
 
     cmap = plt.cm.RdYlGn  # Red-White-Green gradient, smoother
 
-    fig, ax = plt.subplots(figsize=(6,5), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(6,4.5), constrained_layout=True)
     ax.set_aspect('equal')
     ax.set_xlim(aoi_gdf.total_bounds[[0, 2]])
     ax.set_ylim(aoi_gdf.total_bounds[[1, 3]])

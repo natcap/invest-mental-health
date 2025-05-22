@@ -80,7 +80,7 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     ]
     aoi_adm2_clipped["weighted_ndvi"] = weighted_ndvi_list
 
-    ndvi_fig, ax = plt.subplots(figsize=(6, 5))
+    ndvi_fig, ax = plt.subplots(figsize=(5.4, 4.5))
     aoi_adm2_clipped.plot(
         column="weighted_ndvi", cmap="Greens", linewidth=0.8, ax=ax, edgecolor="black",
         legend=True,
@@ -111,7 +111,7 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     df_stats["GEOID"] = aoi_adm2_raw_clipped["GEOID"].values  # 保证对齐
     aoi_joined = aoi_adm2_raw_clipped.merge(df_stats, on="GEOID")
 
-    tree_fig, ax = plt.subplots(figsize=(8, 4))
+    tree_fig, ax = plt.subplots(figsize=(8, 4.5))
     aoi_joined.plot(
         column="cover_10", cmap="viridis_r", linewidth=0.8, ax=ax, edgecolor="black",
         legend=True,
@@ -138,7 +138,7 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     x_lowess = z[:, 0]
     y_lowess = z[:, 1]
 
-    slider_fig, ax = plt.subplots(figsize=(14, 4))
+    slider_fig, ax = plt.subplots(figsize=(12, 4))
     ax.plot(x, y, 'o', alpha=0.4, label='Data', color='skyblue')
     ax.plot(x_lowess, y_lowess, 'r-', linewidth=2, label='LOWESS')
     ax.set_xlabel("Tree Cover (%)")
@@ -221,7 +221,7 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmap = plt.cm.OrRd
 
-    fig_hist, ax = plt.subplots(figsize=(6, 5), constrained_layout=True)
+    fig_hist, ax = plt.subplots(figsize=(6,4.5), constrained_layout=True)
     ax.set_aspect('equal')
 
     aoi_adm2_clipped.plot(
@@ -244,7 +244,7 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
     ax.set_xlim(aoi_adm2_clipped.total_bounds[[0, 2]])
     ax.set_ylim(aoi_adm2_clipped.total_bounds[[1, 3]])
 
-    ax.set_title("Total Preventable Cost by Tract", fontsize=12)
+    ax.set_title("Total Preventable Cost(1000 USD) by Tract", fontsize=12)
     ax.set_xticks([])
     ax.set_yticks([])
     ax.set_xlabel("")
@@ -286,15 +286,16 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
     #     Pop_array, baseline_risk_raster, raster_meta, risk_ratio,
     #     PD_masked=PD_masked
     # )
+    selected_cover = float(np.interp(NE_goal, y_lowess, x_lowess))
     fig_cost_curve = simulate_cost_vs_treecover(
         x_lowess, y_lowess,
         Pop_array, NDVI_array, baseline_risk_raster,
-        risk_ratio, PD_masked
+        risk_ratio, PD_masked,selected_cover=selected_cover
     )
 
     return fig1, fig2, fig_hist, fig_cost_curve
 
-def simulate_cost_vs_treecover(x_lowess, y_lowess, Pop_array, baseline_ndvi_raster, baseline_risk_raster, risk_ratio, PD_masked=None):
+def simulate_cost_vs_treecover(x_lowess, y_lowess, Pop_array, baseline_ndvi_raster, baseline_risk_raster, risk_ratio, PD_masked=None, selected_cover=None):
     """
     Simulate total cost under different Tree Cover (%) choices, using updated PD_i formula:
     PD_i = (1 - exp(ln(RR) * 10 * (NDVI_goal - NDVI_actual))) * baseline_risk * population
@@ -305,38 +306,46 @@ def simulate_cost_vs_treecover(x_lowess, y_lowess, Pop_array, baseline_ndvi_rast
     tree_cover_range = np.linspace(min(x_lowess), max(x_lowess), 50)
     total_costs = []
     cumulative_cost = 0
+    highlight_cost = None  # for selected_cover red dot
 
     for tree_cover in tree_cover_range:
-        # print(tree_cover)
         ndvi_goal = np.interp(tree_cover, x_lowess, y_lowess)
         delta_ndvi = ndvi_goal - baseline_ndvi_raster
         RR_i = np.exp(np.log(risk_ratio) * 10 * delta_ndvi)
         PF_i = 1 - RR_i
         PD_i = PF_i * baseline_risk_raster * Pop_array
         PD_i = np.where(PD_i > 0, PD_i, 0)
-        cumulative_cost += np.nansum(PD_i)
-        total_costs.append(cumulative_cost/1000)
-        # print(total_costs)
 
-    fig, ax = plt.subplots(figsize=(6, 5))
+        cost = np.nansum(PD_i) / 1000
+        cumulative_cost += cost
+        total_costs.append(cumulative_cost)
+
+        # If this point is closest to selected_cover, record it
+        if selected_cover is not None and abs(tree_cover - selected_cover) < (tree_cover_range[1] - tree_cover_range[0]) / 2:
+            highlight_cost = cumulative_cost
+
+    fig, ax = plt.subplots(figsize=(5.5, 4.5))
     ax.plot(tree_cover_range, total_costs, marker='o', color='steelblue')
     ax.set_xlabel("Tree Cover (%)", fontsize=10)
     ax.set_ylabel("Total Preventable Depression (Sum × Pop)", fontsize=10)
 
     # Optional annotation from final PD_i
-    subtitle = ""
     if PD_masked is not None:
         PD_values = PD_masked[0]
         mask = PD_values > 0
-        total_PD_gt0 = np.nansum(PD_values[mask] * Pop_array[mask])
-        # subtitle = f"\nActual Total for PD_i > 0: {total_PD_gt0:,.0f}"
+        total_PD_gt0 = np.nansum(PD_values[mask])
+        # total_PD_gt0 = np.nansum(PD_values[mask] * Pop_array[mask])
         print(f"PD_i > 0 的像素数量: {np.count_nonzero(mask)}")
         print(f"PD_i > 0 的总值（×Pop）: {total_PD_gt0:,.0f}")
 
-    ax.set_title(f"Total Preventable Cost (1000 USD) by Tree Cover Gradient{subtitle}", fontsize=12)
+    ax.set_title("Total Preventable Cost(1000 USD) by Tree Cover Gradient", fontsize=12)
     ax.grid(True)
     ax.tick_params(labelsize=9)
-    fig.tight_layout()
 
+    if selected_cover is not None and highlight_cost is not None:
+        ax.plot(selected_cover, highlight_cost, 'ro', markersize=8, label="Selected Target")
+        ax.legend()
+
+    fig.tight_layout()
     return fig
 
