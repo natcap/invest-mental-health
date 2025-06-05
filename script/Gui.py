@@ -2,9 +2,48 @@ import tkinter as tk
 from tkinter import filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-from Main import run_ndvi_tree_analysis, run_pd_analysis
+# from Main import run_ndvi_tree_analysis, run_pd_analysis
 import numpy as np
-from NDVI_PW import plot_ndvi_vs_negoal_gradient
+from Treecover_approach import*
+# from NDVI_PW import plot_ndvi_vs_negoal_gradient
+from PIL import Image, ImageTk
+
+
+class FlowchartApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Invest_Mental_Health Flowchart Entry")
+        self.root.geometry("1920x1080")
+        self.display_flowchart_screen()
+
+    def display_flowchart_screen(self):
+        self.flow_frame = tk.Frame(self.root)
+        self.flow_frame.pack(fill="both", expand=True)
+
+        # Load and show flowchart image
+        img_path = r"D:/natcap/invest-mental-health/figs/_flow_chart.png"
+        image = Image.open(img_path)
+        image = image.resize((1300, 910), Image.Resampling.LANCZOS)
+        self.photo = ImageTk.PhotoImage(image)
+
+        img_label = tk.Label(self.flow_frame, image=self.photo)
+        img_label.pack(pady=20)
+
+        # Option buttons
+        button_frame = tk.Frame(self.flow_frame)
+        button_frame.pack()
+
+        tk.Button(button_frame, text="Option 1", font=("Arial", 14), command=self.launch_option_1).grid(row=0, column=0, padx=20)
+        tk.Button(button_frame, text="Option 2", font=("Arial", 14), command=lambda: self.show_not_implemented(2)).grid(row=0, column=1, padx=20)
+        tk.Button(button_frame, text="Option 3", font=("Arial", 14), command=lambda: self.show_not_implemented(3)).grid(row=0, column=2, padx=20)
+
+    def launch_option_1(self):
+        self.flow_frame.destroy()
+        InvestGUI(self.root)
+
+    def show_not_implemented(self, option_num):
+        tk.messagebox.showinfo("Option", f"Option {option_num} is not implemented yet.")
+
 
 class InvestGUI:
     def __init__(self, root):
@@ -85,6 +124,7 @@ class InvestGUI:
             "Tree Cover Raster (ESA WorldCover):",
             "Baseline Risk Shapefile:",
             "Health Effect Excel Table:",
+            "Health Cost Table:",
             "Output Folder:"
         ]
 
@@ -96,10 +136,11 @@ class InvestGUI:
             r"G:\Shared drives\invest-health\data\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
             r"G:\Shared drives\invest-health\data\0_input_data\risk\baseline_incidence_rate_06075_2019.shp",
             r"G:\Shared drives\invest-health\data\0_input_data\health_effect_size_table.xlsx",
+            r"G:\Shared drives\invest-health\data\0_input_data\health_cost_table.xlsx",
             r"G:\Shared drives\invest-health\data\output_result"
         ]
 
-        for i in range(8):
+        for i in range(9):
             label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="e",font=("Arial", 12))
             label.grid(row=i, column=0, sticky="e", padx=5, pady=5)
 
@@ -176,8 +217,11 @@ class InvestGUI:
                 widget.destroy()
             for widget in self.right_plot_frame_bottom.winfo_children():
                 widget.destroy()
-            fig1, fig2, fig_hist, fig_cost_curve = run_pd_analysis(
-                *self.paths, self.ne_goal, self.aoi_adm2, self.x_lowess, self.y_lowess
+
+            health_cost_df = pd.read_excel(self.paths[7])
+            cost_value = health_cost_df.loc[health_cost_df["region"] == "USA", "cost_value"].values[0]
+            fig1, fig2, fig_hist, fig_cost_curve, total_cases = run_pd_analysis(
+                *self.paths, self.ne_goal, self.aoi_adm2, self.x_lowess, self.y_lowess,cost_value
             )
             fig3 = plot_ndvi_vs_negoal_gradient(self.ndvi_resampled_path, self.aoi_adm2, self.ne_goal)
             self.display_figure(fig3, location="top", side="left")
@@ -190,10 +234,19 @@ class InvestGUI:
             self.right_plot_frame_middle.configure(bg="white")
             self.right_plot_frame_bottom.configure(bg="white")
 
-            self.log_label.config(text="Maps and curve generated.")
-            # self.log_label = tk.Label(self.left_frame, text="PD maps and cost curve generated.", wraplength=280,
-            #                           anchor="w",
-            #                           justify="left")
+            # Calculate summary message
+            cover = self.slider_var.get()
+
+            health_cost_df = pd.read_excel(self.paths[7])
+            city_cost = health_cost_df.loc[health_cost_df["region"] == "USA", "cost_value"].values[0]
+
+            money_saved = total_cases * city_cost
+
+            import textwrap
+            message = f"{cover:.1f}% tree cover → {total_cases:,.0f} cases prevented, ${money_saved:,.0f} saved."
+            wrapped_msg = textwrap.fill(message, width=35)
+            self.log_label.config(text=wrapped_msg)
+
 
     def setup_slider_area(self, fig):
         self.slider_canvas = FigureCanvasTkAgg(fig, master=self.right_plot_frame_middle)
@@ -310,5 +363,6 @@ if __name__ == "__main__":
     root = tk.Tk()
     # root.geometry("1400x1200")
     # root.state("zoomed")
-    app = InvestGUI(root)
+    app = FlowchartApp(root)
+    # app = InvestGUI(root)
     root.mainloop()
