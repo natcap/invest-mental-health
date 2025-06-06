@@ -137,7 +137,7 @@ class InvestGUI:
             r"G:\Shared drives\invest-health\data\0_input_data\risk\baseline_incidence_rate_06075_2019.shp",
             r"G:\Shared drives\invest-health\data\0_input_data\health_effect_size_table.xlsx",
             r"G:\Shared drives\invest-health\data\0_input_data\health_cost_table.xlsx",
-            r"G:\Shared drives\invest-health\data\output_result"
+            r"D:\natcap\invest-mental-health\data\output"
         ]
 
         for i in range(9):

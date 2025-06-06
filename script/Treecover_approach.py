@@ -206,28 +206,39 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
     fig2 = plot_pd_map_v3(PD_masked=PD_masked, PD_meta=PD_meta, aoi_gdf=aoi_adm1, figures_dir=output_dir,
                           return_fig=True)
 
-    # Histogram plotting
-    pd_values = PD_masked[0].ravel()
-    pd_values = pd_values[np.isfinite(pd_values)]  # remove NaNs
-    pd_values[pd_values < 0] = 0  # If PD value < 0, set to 0
-    pd_values_scaled = np.round(pd_values * 1000).astype(int)
-    unique, counts = np.unique(pd_values_scaled, return_counts=True)
-    histogram_dict = dict(zip(unique, counts))
+    # Clean PD_i raster: set values < 0 to NaN and save to a temporary file
+    with rasterio.open(PD_raster_path) as src:
+        PD_data = src.read(1)
+        meta = src.meta.copy()
 
-    zonal_result = zonal_stats(aoi_adm2_clipped, PD_raster_path, stats="mean", nodata=0)
-    mean_values = [round(stat["mean"] * 1000, 2) if stat["mean"] is not None else 0 for stat in zonal_result]
-    aoi_adm2_clipped["PD_i_avg_x1000"] = mean_values
+    # Set negative values to NaN
+    PD_data_clean = np.where(PD_data < 0, np.nan, PD_data)
+    meta.update({"nodata": np.nan})
 
-    vmin = aoi_adm2_clipped["PD_i_avg_x1000"].min()
-    vmax = aoi_adm2_clipped["PD_i_avg_x1000"].max()
+    # Save the cleaned raster to disk
+    cleaned_raster_path = os.path.join(output_dir, "PD_i_cleaned.tif")
+    with rasterio.open(cleaned_raster_path, "w", **meta) as dst:
+        dst.write(PD_data_clean, 1)
+
+    # Perform zonal statistics (sum of PD_i within each tract)
+    zonal_result = zonal_stats(aoi_adm2_clipped, cleaned_raster_path, stats="sum", nodata=np.nan)
+
+    # Multiply sum by cost value to get preventable cost per tract
+    sum_values = [round(stat["sum"] * cost_value/1000, 2) if stat["sum"] is not None else 0 for stat in zonal_result]
+    aoi_adm2_clipped["PD_i_sum_cost"] = sum_values
+
+    # Set color normalization and color map
+    vmin = aoi_adm2_clipped["PD_i_sum_cost"].min()
+    vmax = aoi_adm2_clipped["PD_i_sum_cost"].max()
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmap = plt.cm.OrRd
 
-    fig_hist, ax = plt.subplots(figsize=(6.3,4.5), constrained_layout=True)
+    # Plotting figure
+    fig_hist, ax = plt.subplots(figsize=(6.3, 4.5), constrained_layout=True)
     ax.set_aspect('equal')
 
     aoi_adm2_clipped.plot(
-        column="PD_i_avg_x1000",
+        column="PD_i_sum_cost",
         cmap=cmap,
         norm=norm,
         linewidth=0.8,
@@ -235,22 +246,21 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
         edgecolor="black",
         legend=False
     )
+
+    # Add colorbar
     sm = ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-
     cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
     tick_values = np.linspace(vmin, vmax, 5)
     cbar.set_ticks(tick_values)
-    cbar.set_ticklabels([f"{val / 1000:.0f}" for val in tick_values])
-    # cbar.set_label("Cost(1000 USD)", fontsize=10)
+    cbar.set_ticklabels([f"{val:.0f}" for val in tick_values])
+
+    # Set figure bounds and appearance
     ax.set_xlim(aoi_adm2_clipped.total_bounds[[0, 2]])
     ax.set_ylim(aoi_adm2_clipped.total_bounds[[1, 3]])
-
-    ax.set_title("Total Preventable Cost(1000 USD) by Tract", fontsize=12)
+    ax.set_title("Total Preventable Cost (1000 USD) by Tract", fontsize=12)
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_xlabel("")
-    ax.set_ylabel("")
     ax.set_facecolor("white")
 
     # # Prepare for simulate_cost_vs_treecover
@@ -1139,6 +1149,7 @@ def plot_pd_map_v1(PD_raster_path, aoi_gdf, return_fig=False):
     ax.set_ylabel("Latitude", fontsize=9)
     ax.set_facecolor("white")
     ax.grid(False)
+
 
     if return_fig:
         return fig
