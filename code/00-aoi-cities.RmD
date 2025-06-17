@@ -1,0 +1,304 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+## R setup
+
+```{r}
+rm(list = ls())
+
+source("./code/_dir_packages.R")
+
+library(sf)
+library(tidycensus)
+library(tigris)
+
+library(ggplot2)
+library(viridis)
+```
+
+
+## census 
+
+```{r}
+yr <- 2023
+
+tract_exclude <- c('06075980401', '06075017902', '06075017903') ## exclude islands near San Francisco 
+
+
+# load your Census API key from an environment variable
+api_key <- Sys.getenv("MY_Census_API_KEY") 
+census_api_key('4d734dc264114e78500871cc76a9cf90928b1371', install = TRUE, overwrite = TRUE)
+```
+
+
+```{r eval=FALSE, include=FALSE}
+vars_acs5 <- load_variables(year = yr, dataset = "acs5", cache = F)
+
+if (yr %in% c(2000, 2010, 2020) ) {
+  vars_dec <- load_variables(year = yr, dataset = 'pl', cache = F)
+}
+
+
+vars_acs5_tract <- vars_acs5 %>%
+  dplyr::filter(geography == "tract") %>%
+  # dplyr::filter(str_detect(concept, "ALONE|WORKERS|POVERTY|ANCESTRY|FAMILY|FAMILIES|BIRTH|NATIVITY|HEALTH|LANGUAGE|COVERAGE|MOBILITY", negate = T)) %>%
+  dplyr::filter(label == 'Estimate!!Total:') %>%
+  as.data.frame()
+
+
+
+vars_acs5_subset <- vars_acs5 %>%
+  dplyr::filter(geography == "tract") %>%
+  dplyr::filter(str_detect(concept, "ALONE|WORKERS|POVERTY|ANCESTRY", negate = T)) %>%
+  as.data.frame()
+
+# View(v17)
+unique(vars_acs5$geography)
+
+```
+
+
+
+```{r - get tract, include=FALSE}
+
+tract_acs <- get_acs(
+  geography = "tract",
+  # survey = "acs5",
+  # variables = "B19013_001", # Median household income
+  variables = "B01001_001", # Total population
+  state = "CA",
+  county = "San Francisco",
+  year = yr,
+  geometry = TRUE, 
+  cb = T
+) %>%
+  filter(!st_is_empty(geometry)) %>%
+  dplyr::filter(!GEOID %in% tract_exclude) %>%
+  mutate(county_fips = substr(GEOID, 1, 5)) #%>%
+  # erase_water(year = 2020) %>%
+  # st_transform(26918) 
+
+
+# save shapefile
+f <- paste0("data/aoi/", "tract_", yr, ".shp"); f
+st_write(tract_acs, dsn = f, delete_dsn = TRUE)
+```
+
+
+```{r - plot tract}
+
+## Plot
+ggplot(tract_acs, aes(fill = estimate)) + 
+  geom_sf() + 
+  scale_fill_viridis_c(
+    breaks = c(0, 1000, 2000, 5000, 10000),
+    name = yr
+  ) +
+  theme_void() + 
+  # scale_fill_viridis_c(labels = scales::dollar) +
+  theme(legend.position = "right") 
+
+
+getwd()
+f <- paste0(dir.figures, "acs_san_francisco_tract_", yr, ".png"); f
+ggsave(f, width = 8, height = 6, units = 'in', dpi = 300)
+```
+
+
+```{r - mapview}
+
+library(mapview)
+
+mapview(tract_acs, zcol = "estimate", layer.name = yr, legend = TRUE)
+
+```
+
+
+
+
+## aoi 
+
+```{r - clipped tract, eval=FALSE, include=FALSE}
+
+dir.aoi   <- 'D:/data/shp/US_census_Cartographic_Boundary_Shapefiles/cb_2020_us_ua20_500k/cb_2020_us_ua20_500k.shp'
+dir.tract <- 'D:/data/shp/US_census_Cartographic_Boundary_Shapefiles/cb_2019_us_tract_500k/cb_2019_us_tract_500k.shp'
+dir.bg    <- 'D:/data/shp/US_census_Cartographic_Boundary_Shapefiles/cb_2019_us_bg_500k/cb_2019_us_bg_500k.shp'
+
+ua <- st_read(dir.aoi) 
+tracts <- st_read(dir.tract)  # Census Tracts
+# bg <- st_read(dir.bg)  # Census Tracts
+
+
+tracts <- st_make_valid(tracts)
+# Calculate original tract area
+tracts$tract_area <- st_area(tracts)
+
+# # Ensure same CRS
+# ua <- st_transform(ua, st_crs(tracts))
+
+cities <- c("San Francisco", 
+            # "New York", "Chicago", 
+            "San Antonio", "Los Angeles", 
+            "Minneapolis",
+            "Seattle", "Pittsburgh")
+
+
+ua.i <- ua %>%
+  filter(str_detect(NAME20, paste(cities, collapse = "|")))
+ua.i <- st_make_valid(ua.i)
+
+
+
+# # Spatial filter: keep tracts that intersect any urban area polygon
+# tract.ua.i <- tracts[st_intersects(tracts, ua.i, sparse = FALSE), ]
+# # bg.ua.i    <- bg[st_intersects(bg, ua.i, sparse = FALSE), ]
+# 
+# tract.ua.i <- st_make_valid(tract.ua.i)
+
+
+# ggplot() +
+#   geom_sf(data = ua.i, color = 'red', linewidth = 2,  fill = NA) +
+#   # geom_sf(data = tract.ua.i, aes(fill = GEOID), alpha = 0.5, show.legend = F) +
+#   # geom_sf(data = tract.ua.i, color = 'blue', linewidth = 1,  fill = 'NA', alpha = 0.5, show.legend = F) +
+#   geom_sf(data = bg.ua.i, aes(fill = GEOID), alpha = 0.8, show.legend = F) +
+#   
+#   # # coord_sf(crs = 26914) +
+#   # scale_fill_viridis(option = "magma") +
+#   # scale_color_viridis(option = "magma") +
+#   theme_minimal()
+
+
+
+
+
+
+# Compute intersection between tracts and urban areas
+intersection <- st_intersection(tracts, ua.i)
+
+# Calculate overlap area for each intersected tract
+intersection$overlap_area <- st_area(intersection)
+
+
+
+
+tract_overlap2 <- intersection %>%
+  group_by(GEOID, NAME20) %>%  # or whatever your tract ID field is
+  summarise(overlap_area = sum(overlap_area)) %>%
+  left_join(x = ., y = tracts %>% st_drop_geometry(), by = "GEOID") %>%
+  mutate(overlap_ratio = as.numeric(overlap_area / tract_area)) %>%
+  filter(overlap_ratio >= 0.1)
+
+
+
+# save shapefile
+f <- "data/aoi/tract_overlap_r.shp"
+st_write(tract_overlap2, dsn = f, delete_dsn = TRUE)
+
+
+# ggplot(data = tract_overlap2) +
+#   geom_sf(color = 'red', linewidth = 2,  fill = NA) +
+#   # geom_sf(data = tract_overlap, aes(fill = GEOID), alpha = 0.5, show.legend = F) +
+#   # facet_wrap(~NAME20, scales = "free") +
+#   facet_grid(~NAME20, scales = "free") +
+#   theme_minimal() +
+#   theme(
+#     strip.text = element_text(size = 8, face = "bold"),
+#     axis.text = element_blank(),
+#     axis.ticks = element_blank(),
+#     panel.grid = element_blank()
+#   )
+```
+
+
+```{r - complete tract, eval=FALSE, include=FALSE}
+
+# 1. Compute intersection geometries (tract ∩ urban area)
+intersection <- st_intersection(tracts, ua.i)
+
+# 2. Add area of intersection
+intersection <- intersection %>%
+  mutate(overlap_area = st_area(.))
+
+# # 3. Add area of full tracts
+# tracts <- tracts %>%
+#   mutate(tract_area = st_area(.)) %>%
+#   st_drop_geometry()  # just for efficient joining later
+
+# 4. Summarize overlap by tract and urban area
+tract_overlap3 <- intersection %>%
+  st_drop_geometry() %>%  # remove geometry to speed up grouping
+  group_by(GEOID, NAME20) %>%
+  summarise(overlap_area = sum(overlap_area), .groups = "drop") %>%
+  left_join(x = tracts, y=., by = "GEOID") %>%
+  mutate(overlap_ratio = as.numeric(overlap_area / tract_area)) %>%
+  filter(overlap_ratio >= 0.1)
+
+
+# save shapefile
+f <- "./data/aoi/tract_overlap_r_completeTract.shp"
+st_write(tract_overlap3, dsn = f, delete_dsn = TRUE)
+```
+
+
+
+```{r - load from py results}
+
+f <- "./data/aoi/tract_ua_2020_py.shp"
+aoi <- st_read(f) %>%
+  select(-any_of(c("NAME", 'STATE_NAME', "LSAD", "NAMELSADCO", "AWATER", "tract_area", "overlap_ra", 'overlap_ar')))
+
+
+states <- unique(aoi$STATEFP)
+
+pop_2020 <- get_decennial(
+  geography = "tract",
+  variables = "P1_001N",  # Total population
+  year = 2020,
+  # sumfile = "pl",
+  state = states,
+  geometry = F
+)
+
+
+
+aoi_sf <- aoi %>%
+  rename('NAME20_UA' = 'NAME20') %>%
+  # filter(str_detect(NAME20, 'San Francisco')) %>%
+  left_join(., pop_2020, by = c("GEOID" = "GEOID"))
+
+
+
+```
+
+
+
+
+## plot
+
+```{r}
+
+data <- aoi_sf; v <- 'm'
+
+library(tmap)
+
+map <- 
+  tm_shape(data) + 
+  tm_polygons(col = "estimate", lwd = 0.2, col_alpha = 0.3, alpha = 0.5, legend.show = T) +
+  # tm_shape(ua.i) + 
+  tm_borders(col = "red", lwd = 0.5) +
+  # tm_facets(by = "NAME20_UA", free.coords = TRUE) +
+  tm_scale_bar(breaks = c(0, 5, 10), position = c("left", "bottom"))
+# map
+
+# Save the map to file
+f <- paste0(dir.figures, "acs_tract_urban_facets_", v, ".png")
+tmap_save(tm = map, filename = f, dpi = 300, width = 180, height = 150, units = "mm")
+```
+
