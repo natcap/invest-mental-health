@@ -1,0 +1,85 @@
+---
+title: "04-health-baseline"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+## R setup
+
+```{r}
+rm(list = ls())
+
+source("./code/_dir_packages.R")
+
+```
+
+
+## Load data
+
+```{r message=FALSE, include=FALSE}
+
+library(sf)
+library(dplyr)
+
+# List shapefile paths
+shp_files <- list.files(path = "./data/health", 
+                        pattern = "\\.shp$", 
+                        full.names = TRUE)
+
+# Load and combine shapefiles
+combined_sf <- shp_files %>%
+  lapply(st_read) %>% 
+  bind_rows()
+
+
+names(combined_sf)
+
+
+combined_sf_sub <- combined_sf %>%
+  dplyr::select(-any_of(c("Countis", "NAME", "variabl", "moe", "AWATER"))) 
+
+```
+
+
+
+## Plot time-series data
+
+```{r}
+
+library(tmap)
+
+
+# "DEPRESS"  "HIGHCHO"  "MHLTH"   
+# "OBESITY"  "PHLTH" 
+
+var <- "HIGHCHO"  
+var <- "OBESITY"
+var <- "PHLTH"
+var <- "MHLTH"
+var <- "DEPRESS"
+
+# Example dataset structure:
+# df: sf object with columns geometry, year, and value
+# year: time variable for faceting (e.g., 2010, 2015, 2020)
+
+tm_shape(combined_sf_sub) +
+  tm_polygons(col = var, 
+              style = "jenks",       # use quantile breaks; pretty; jenks; quantile
+              legend.reverse = TRUE,   #  Reverse the legend order
+              palette = "Purples", title = str_to_title(var)) +
+  tm_facets(by = "yrBRFSS", 
+            drop.units = TRUE,
+            free.coords = FALSE) +
+  tm_layout(panel.labels = unique(combined_sf_sub$yrBRFSS), 
+            legend.outside = T, 
+            legend.position = c('right', 'bottom'))
+
+
+## save figure 
+f <- paste0(dir.figures, "health_map_time_series_", str_to_title(var), ".png")
+tmap_save(filename = f, width = 7, height = 5)
+
+```
+
