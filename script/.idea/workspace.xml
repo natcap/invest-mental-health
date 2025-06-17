@@ -6,14 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="02fdf7dc-6495-4311-8951-96e63cc8d2e3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../code/mental-health-cost.Rmd" beforeDir="false" afterPath="$PROJECT_DIR$/../code/mental-health-cost.Rmd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/Gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NDVI_PW.py" beforeDir="false" afterPath="$PROJECT_DIR$/NDVI_PW.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tree_Cover.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tree_Cover.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/calculate_pd_layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/calculate_pd_layer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/viz_pd_1.py" beforeDir="false" afterPath="$PROJECT_DIR$/viz_pd_1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/viz_pd_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/viz_pd_3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +28,8 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Python.Gui.executor": "Run",
+    "Python.Main.executor": "Run",
+    "Python.Treecover_approach.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main"
