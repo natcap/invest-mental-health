@@ -33,8 +33,9 @@ tract_exclude <- c('06075980401', '06075017902', '06075017903') ## exclude islan
 
 
 # load your Census API key from an environment variable
+readRenviron("~/.Renviron")
 api_key <- Sys.getenv("MY_Census_API_KEY") 
-census_api_key('4d734dc264114e78500871cc76a9cf90928b1371', install = TRUE, overwrite = TRUE)
+census_api_key(api_key, install = TRUE, overwrite = TRUE)
 ```
 
 
