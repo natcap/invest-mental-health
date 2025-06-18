@@ -7,6 +7,9 @@ import numpy as np
 from Treecover_approach import*
 # from NDVI_PW import plot_ndvi_vs_negoal_gradient
 from PIL import Image, ImageTk
+from Health_cost import CostTableSelector
+from Run_option3 import Option3GUI
+from Run_option2 import Option2GUI
 
 
 class FlowchartApp:
@@ -34,8 +37,16 @@ class FlowchartApp:
         button_frame.pack()
 
         tk.Button(button_frame, text="Option 1", font=("Arial", 14), command=self.launch_option_1).grid(row=0, column=0, padx=20)
-        tk.Button(button_frame, text="Option 2", font=("Arial", 14), command=lambda: self.show_not_implemented(2)).grid(row=0, column=1, padx=20)
-        tk.Button(button_frame, text="Option 3", font=("Arial", 14), command=lambda: self.show_not_implemented(3)).grid(row=0, column=2, padx=20)
+        tk.Button(button_frame, text="Option 2", font=("Arial", 14), command=self.launch_option_2).grid(row=0, column=1, padx=20)
+        tk.Button(button_frame, text="Option 3", font=("Arial", 14), command=self.launch_option_3).grid(row=0, column=2, padx=20)
+
+    def launch_option_3(self):
+        self.flow_frame.destroy()
+        Option3GUI(self.root)
+
+    def launch_option_2(self):
+        self.flow_frame.destroy()
+        Option2GUI(self.root)
 
     def launch_option_1(self):
         self.flow_frame.destroy()
@@ -115,6 +126,7 @@ class InvestGUI:
         self.right_input_frame.pack(fill="both", expand=True)
         self.right_canvas.bind_all("<MouseWheel>", lambda event: self.right_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units"))
 
+
         self.input_entries = []
         self.input_labels = [
             "AOI County Shapefile:",
@@ -124,7 +136,6 @@ class InvestGUI:
             "Tree Cover Raster (ESA WorldCover):",
             "Baseline Risk Shapefile:",
             "Health Effect Excel Table:",
-            "Health Cost Table:",
             "Output Folder:"
         ]
 
@@ -136,13 +147,13 @@ class InvestGUI:
             r"G:\Shared drives\invest-health\data\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
             r"G:\Shared drives\invest-health\data\0_input_data\risk\baseline_incidence_rate_06075_2019.shp",
             r"G:\Shared drives\invest-health\data\0_input_data\health_effect_size_table.xlsx",
-            r"G:\Shared drives\invest-health\data\0_input_data\health_cost_table.xlsx",
             r"D:\natcap\invest-mental-health\data\output"
         ]
 
-        for i in range(9):
+        for i in range(8):
             label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="e",font=("Arial", 12))
             label.grid(row=i, column=0, sticky="e", padx=5, pady=5)
+
 
 ######### Edit entry dialog length##########
             entry = tk.Entry(self.right_input_frame, width=130,font=("Arial", 12))
@@ -154,7 +165,17 @@ class InvestGUI:
             browse_btn = tk.Button(self.right_input_frame, text="Browse", font=("Arial", 12),command=lambda e=entry, i=i: self.browse_path(e, self.input_labels[i]))
             browse_btn.grid(row=i, column=2, padx=5, pady=5)
 
+        for j in range(2):
+            spacer = tk.Label(self.right_input_frame, text="")
+            spacer.grid(row=9 + j, column=0)
+
+        self.cost_selector = CostTableSelector(self.right_input_frame)
+        self.cost_selector.frame.grid(row=11, column=0, columnspan=3, sticky="w", padx=5, pady=10)
+
         self.right_input_frame.grid_columnconfigure(1, weight=1)
+
+
+
 
     def browse_path(self, entry_widget, label_text):
         if "Folder" in label_text:
@@ -218,8 +239,12 @@ class InvestGUI:
             for widget in self.right_plot_frame_bottom.winfo_children():
                 widget.destroy()
 
-            health_cost_df = pd.read_excel(self.paths[7])
-            cost_value = health_cost_df.loc[health_cost_df["region"] == "USA", "cost_value"].values[0]
+            # health_cost_df = pd.read_excel(self.paths[7])
+            # cost_value = health_cost_df.loc[health_cost_df["region"] == "USA", "cost_value"].values[0]
+            cost_value = self.cost_selector.df.loc[
+                self.cost_selector.df["region"] == self.cost_selector.combo_var.get(), "cost_value"
+            ].values[0]
+
             fig1, fig2, fig_hist, fig_cost_curve, total_cases = run_pd_analysis(
                 *self.paths, self.ne_goal, self.aoi_adm2, self.x_lowess, self.y_lowess,cost_value
             )
@@ -237,10 +262,7 @@ class InvestGUI:
             # Calculate summary message
             cover = self.slider_var.get()
 
-            health_cost_df = pd.read_excel(self.paths[7])
-            city_cost = health_cost_df.loc[health_cost_df["region"] == "USA", "cost_value"].values[0]
-
-            money_saved = total_cases * city_cost
+            money_saved = total_cases * cost_value
 
             import textwrap
             message = f"{cover:.1f}% tree cover → {total_cases:,.0f} cases prevented, ${money_saved:,.0f} saved."
@@ -358,6 +380,7 @@ class InvestGUI:
             # self.log_label = tk.Label(self.left_frame, text="Returned to NE_goal selection view.", wraplength=280,
             #                           anchor="w",
             #                           justify="left")
+
 
 if __name__ == "__main__":
     root = tk.Tk()

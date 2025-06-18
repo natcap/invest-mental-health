@@ -26,7 +26,7 @@ import plotly.express as px
 import plotly.io as pio
 
 
-def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path, risk_path, excel_file, cost_file, output_dir):
+def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path, risk_path, excel_file, output_dir):
     import geopandas as gpd
     import numpy as np
     import matplotlib.pyplot as plt
@@ -153,7 +153,7 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     NE_goal = 0.3  # placeholder
     return NE_goal, ndvi_fig, tree_fig, slider_fig, x_lowess, y_lowess, aoi_adm2_clipped, ndvi_resampled_path
 
-def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path, risk_path, excel_file,cost_path,output_dir,
+def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path, risk_path, excel_file,output_dir,
                     NE_goal, aoi_adm2_clipped, x_lowess, y_lowess, cost_value):
     target_crs = "EPSG:5070"
 
