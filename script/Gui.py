@@ -24,7 +24,7 @@ class FlowchartApp:
         self.flow_frame.pack(fill="both", expand=True)
 
         # Load and show flowchart image
-        img_path = r"D:/natcap/invest-mental-health/figs/_flow_chart.png"
+        img_path = r"D:/natcap/invest-mental-health/figures/_flow_chart.png"
         image = Image.open(img_path)
         image = image.resize((1300, 910), Image.Resampling.LANCZOS)
         self.photo = ImageTk.PhotoImage(image)

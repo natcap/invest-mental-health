@@ -12,7 +12,7 @@ class CostTableSelector:
         # Entry for path
         self.entry = tk.Entry(self.frame, width=70, font=("Arial", 12))
         self.entry.grid(row=0, column=1, padx=5)
-        self.entry.insert(0, r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_cost_table.xlsx")
+        self.entry.insert(0, r"G:\Shared drives\invest-health\data\0_input_data\health_cost_table.xlsx")
 
         # Browse button
         browse_btn = tk.Button(self.frame, text="Browse", font=("Arial", 12), command=self.browse)
