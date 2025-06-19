@@ -291,10 +291,10 @@ library(tmap)
 
 map <- 
   tm_shape(data) + 
-  tm_polygons(col = "estimate", lwd = 0.2, col_alpha = 0.3, alpha = 0.5, legend.show = T) +
+  tm_polygons(col = "value", lwd = 0.2, col_alpha = 0.3, alpha = 0.5, legend.show = T) +
   # tm_shape(ua.i) + 
   tm_borders(col = "red", lwd = 0.5) +
-  # tm_facets(by = "NAME20_UA", free.coords = TRUE) +
+  tm_facets(by = "NAME20_UA", free.coords = TRUE) +
   tm_scale_bar(breaks = c(0, 5, 10), position = c("left", "bottom"))
 # map
 
