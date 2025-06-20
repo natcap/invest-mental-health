@@ -27,7 +27,7 @@ library(viridis)
 ## census 
 
 ```{r}
-yr <- 2023
+yr <- 2020
 
 tract_exclude <- c('06075980401', '06075017902', '06075017903') ## exclude islands near San Francisco 
 
@@ -69,11 +69,17 @@ unique(vars_acs5$geography)
 
 ```{r - get tract, include=FALSE}
 
+# Define variable(s) to get, e.g., total population
+vars <- "B01001_001"  # Total population - Sex by Age
+vars <- "B01003_001"  # Total population (this is the same as 'B01001_001')
+
+
+
 tract_acs <- get_acs(
   geography = "tract",
   # survey = "acs5",
   # variables = "B19013_001", # Median household income
-  variables = "B01001_001", # Total population
+  variables = vars, 
   state = "CA",
   county = "San Francisco",
   year = yr,
@@ -88,9 +94,12 @@ tract_acs <- get_acs(
 
 
 # save shapefile
-f <- paste0("data/aoi/", "tract_", yr, ".shp"); f
+f <- paste0("data/aoi/", "tract_", yr, '_', vars, ".shp"); f
 st_write(tract_acs, dsn = f, delete_dsn = TRUE)
 ```
+
+
+
 
 
 ```{r - plot tract}
@@ -108,7 +117,7 @@ ggplot(tract_acs, aes(fill = estimate)) +
 
 
 getwd()
-f <- paste0(dir.figures, "acs_san_francisco_tract_", yr, ".png"); f
+f <- paste0(dir.figures, "acs_san_francisco_tract_", yr, '_', vars, ".png"); f
 ggsave(f, width = 8, height = 6, units = 'in', dpi = 300)
 ```
 
@@ -122,6 +131,61 @@ mapview(tract_acs, zcol = "estimate", layer.name = yr, legend = TRUE)
 ```
 
 
+
+
+```{r - get tract for all states, eval=FALSE, include=FALSE}
+
+library(tidycensus)
+library(dplyr)
+library(purrr)
+
+# Load your Census API key first if not already
+# census_api_key("YOUR_API_KEY", install = TRUE)
+
+# Get state abbreviations (or use fips codes)
+states <- state.abb; 
+
+# If you want to include DC and territories, use:
+states <- unique(fips_codes$state)[1:51]
+
+states
+length(states)  # 50 states
+
+
+# Download ACS tract-level population data for all states
+tract_pop_ <- map_dfr(states, function(st) {
+  get_acs(
+    geography = "tract",
+    variables = vars,
+    state = st,
+    year = yr,       # or other year
+    survey = "acs5",   # ACS 5-year
+    cb = T,
+    geometry = FALSE   # Set to TRUE if you want spatial data
+  )
+})
+
+
+tract_pop_all <- tract_pop_ %>%
+  # filter(!st_is_empty(geometry)) %>%
+  # dplyr::filter(!GEOID %in% tract_exclude) %>%
+  select(-moe, -NAME) %>% 
+  rename('pop_tract' = 'estimate') %>%
+  mutate(
+    year = yr,
+    county_fips = substr(GEOID, 1, 5)) %>%
+  select(GEOID, county_fips, everything())
+
+
+
+# View result
+head(tract_pop_all)
+
+## save dataframe as csv
+f <- paste0("data/aoi/", "tract_pop_", yr, ".csv")
+readr::write_csv(tract_pop_all, file = f)
+
+```
 
 
 ## aoi 
