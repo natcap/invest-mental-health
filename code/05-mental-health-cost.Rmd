@@ -6,7 +6,8 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+rm(list = ls())
 
 library(dplyr)
 library(stringr)
@@ -25,9 +26,110 @@ today <- format(Sys.time(), "%Y%m%d"); today
   source: https://ncrr-au.shinyapps.io/mental-cost/
   Christensen MK et al (2020). The cost of mental disorders: a systematic review. Epidemiology and Psychiatric Sciences 29, e161, 1–8. https://doi.org/10.1017/ S204579602000075X
   
+  
+### detailed categories 
+
+  * dx_type
+  * cost_approach 
+  
+```{r}
+f <- paste0(dir.cost, 'Christensen_et_al_2020/', '200205_SR.xlsx') # detailed data shared by John McGrath
+dat <- readxl::read_excel(f, col_types = "text") %>%
+  rename('Price_2018_adj' = '2018_Price (inflation adjusted)')
+
+
+## specific mental health indicators included in the detailed data
+unique(dat$dx_type) %>% sort() #%>%
+  # paste(., collapse = ', ') %>%
+  # cat('\nUnique mental health indicators:\n', .)
+
+dat.dx_type <- dat %>%
+  distinct(dx_broad, dx_type) 
+
+unique(dat$cost_approach)   # "prevalence"           "incidence"
+unique(dat$cost_category)   # "direct", "direct and indirect", "direct, indirect and intangible", "indirect"
+unique(dat$cost_broad_type) # "total direct health care cost", "total productivity loss", "total societal cost", "direct health care cost", ...     
+unique(dat$cost_type)       # "disorder cost" "control cost"  "excess cost"  
+unique(dat$cost_unit)       # "national cost", "subnational cost", "mean cost per patient", "mean cost per control", ...
+
+
+## select data for later use
+cost_broad_type_i <- "total societal cost"
+cost_unit_i       <- "mean cost per patient"
+```
+
+
+
+```{r - depression}
+
+dat_depress <- dat %>%
+  select(-any_of(c("combined_endnoteID", "endnote_id", "rate_id", 'specific_details',
+                   'def_perspective',
+                   "data_source_broad", "data_source", "page_number", "table_number"
+                   ))) %>%
+  select( -c(dx_definition, diag_criteria, 
+             cost_specific_type:cost_method,
+             comment1:comment3) ) %>%
+  filter( dx_broad %in% c('mood disorders') ) %>%
+  # filter(str_detect(dx_type, 'depress')) %>%
+  filter(cost_broad_type %in% c('total societal cost')) %>%
+  # filter(str_detect(cost_unit, cost_unit_i)) %>%
+  filter(cost_unit == cost_unit_i) %>%
+  rename('Price_USD_PPP' = '2018_Price_USD') %>%  ## confirm this is the correct column
+  mutate(Price_USD_PPP = as.numeric(Price_USD_PPP),
+         Price_2018_adj = as.numeric(Price_2018_adj)) %>%
+  filter(!is.na(Price_2018_adj) & !is.na(Price_USD_PPP)) %>%
+  as.data.frame()
+
+
+names(dat_depress)
+```
+
+
+```{r - plot}
+
+dat_depress_ctr <- dat_depress %>%
+  group_by(country, dx_broad, cost_broad_type, cost_unit) %>%
+  summarise_at(c('Price_2018_adj', 'Price_USD_PPP'), mean, na.rm = TRUE) %>%
+  as.data.frame()
+
+unique(dat_depress_ctr$dx_broad)
+
+
+dat_depress_ctr_p <- dat_depress_ctr; v <- 'agg'; ## aggregated data for plotting
+dat_depress_ctr_p <- dat_depress;     v <- 'raw'; ## individual data for plotting
+
+
+
+## plot the data
+dat_depress_ctr_p %>%
+  filter(cost_broad_type == cost_broad_type_i) %>%
+  ggplot(aes(y = reorder(country, -Price_USD_PPP), x = Price_USD_PPP)) + 
+  geom_point(
+    alpha = 0.8,
+    aes(
+      colour = dx_broad,
+      shape = dx_broad)) +
+  scale_shape_manual(values = c(seq(1:6), 15, 16, 17) ) +
+  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                limits = c(10, 10^5),  # set lower and upper limits
+                labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_discrete(limits=rev) +
+  xlab('Societal cost per patient in USD PPP 2018') +
+  # ylab('') +
+  theme_bw() +
+  theme(axis.title.y=element_blank())
+
+f <- paste0('./figures/', 'mental_dx_cost_', v, '_', today, '.png'); f
+ggsave(f, plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
+
+```
+
+
+### broad categories 
+  
 ```{r}
 f <- paste0(dir.cost, 'Christensen_et_al_2020/', 'data-full.xlsx') # simplified data shared online 
-# f <- paste0(dir.cost, 'Christensen_et_al_2020/', '200205_SR.xlsx') # detailed data shared by John McGrath
 
 
 d <- readxl::read_excel(f, col_types = "text") %>%
@@ -42,9 +144,7 @@ unique(d$cost_type)
 unique(d$cost_unit)
 
 
-## select data for later use
-cost_broad_type_i <- "total societal cost"
-cost_unit_i       <- "mean cost per patient"
+
 
 
 ## check the data
@@ -72,7 +172,8 @@ df <- d %>%
   #        # Price_USD_PPP, 
   #        Price_2018_adj,
   #        -c(study_title, site, cost_specific_type)) %>%
-  mutate(Price_USD_PPP = as.numeric(Price_USD_PPP),
+  mutate(Price_USD      = as.numeric(Price_USD),
+         Price_USD_PPP  = as.numeric(Price_USD_PPP),
          Price_2018_adj = as.numeric(Price_2018_adj)) %>%
   select(1:cost_type, everything())
   
@@ -81,9 +182,7 @@ unique(df$dx_broad) %>% sort() %>%
   paste(., collapse = ', ') %>%
   cat('\nUnique mental health indicators:\n', .)
 
-unique(df$dx_type) %>% sort() #%>%
-  # paste(., collapse = ', ') %>%
-  # cat('\nUnique mental health indicators:\n', .)
+
 
 
 cat('\n Unique countries:', length(unique(df$country)))
@@ -92,41 +191,49 @@ cat('\n Unique countries:', length(unique(df$country)))
 
 ```{r - plot as Christensen}
 
-
 df_ctr_dx <- df %>%
   group_by(country, dx_broad, cost_broad_type, cost_unit) %>%
   summarise_at(c('Price_USD', 'Price_USD_PPP', 'Price_2018_adj'), mean, na.rm = TRUE) %>%
   as.data.frame()
 
-n_dx <- length(unique(df_ctr_dx$dx_broad))
+
+df_ctr_dx_p <- df_ctr_dx; v <- 'agg'; ## aggregated data for plotting
+df_ctr_dx_p <- df;        v <- 'raw'; ## individual data for plotting
 
 
-df_ctr_dx %>%
+df_ctr_dx_p %>%
   filter(cost_broad_type == cost_broad_type_i) %>%
-  ggplot(aes(y = country, x = Price_USD_PPP)) + 
+  ggplot(aes(y = reorder(country, -Price_USD_PPP), x = Price_USD_PPP)) + 
   geom_point(
     alpha = 0.8,
     aes(
       colour = dx_broad,
       shape = dx_broad)) +
   scale_shape_manual(values = c(seq(1:6), 15, 16, 17) ) +
-  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_log10(
+    limits = c(10, 10^5),  # set lower and upper limits
+    breaks = trans_breaks("log10", function(x) 10^x), 
+    # breaks = function(x) {
+    #   min_exp <- floor(log10(x[1]))
+    #   max_exp <- ceiling(log10(x[2]))
+    #   10^(min_exp:max_exp)
+    # },
+    labels = trans_format("log10", math_format(10^.x))) +
   scale_y_discrete(limits=rev) +
   xlab('Societal cost per patient in USD PPP 2018') +
-  theme_bw()
+  theme_bw() +
+  theme(axis.title.y=element_blank())
 
-f <- paste0('./figures/', 'mental_cost_', today, '.png'); f
+f <- paste0('./figures/', 'mental_cost_', v, '_', today, '.png'); f
 ggsave(f, plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
 ```
 
 
 
 ```{r - relevant to InVEST}
-df_select <- df_ctr_dx %>%
+df_select <- df_ctr_dx_p %>%
   filter(dx_broad %in% c("behavioural disorders", 
                          "mood disorders", 
-                         # "personality disorders", 
                          "schizophrenia")) %>%
   as.data.frame() 
 
@@ -149,7 +256,7 @@ readr::write_csv(df_mood, f)
 
 ```{r - relevant to InVEST}
 df_select %>%
-  ggplot(aes(y = country, x = Price_USD_PPP)) + 
+  ggplot(aes(y = reorder(country, -Price_USD_PPP), x = Price_USD_PPP)) + 
   geom_point(
     alpha = 0.8,
     aes(
@@ -157,11 +264,14 @@ df_select %>%
       shape = dx_broad)) +
   scale_shape_manual(values = c(seq(1:6), 15, 16, 17) ) +
   scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                limits = c(10, 10^5),  # set lower and upper limits
                 labels = trans_format("log10", math_format(10^.x))) +
   scale_y_discrete(limits=rev) +
   xlab('Societal cost per patient in USD PPP 2018') +
-  theme_bw()
+  theme_bw() +
+  theme(axis.title.y=element_blank())
 
-ggsave(filename = './figures/mental_cost_select_2.png', plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
+f <- paste0('./figures/', 'mental_cost_select_', v, '_', today, '.png'); f
+ggsave(filename = f, plot = last_plot(), width = 7, height = 7, units = 'in', dpi = 300, bg = NULL)
 ```
 
