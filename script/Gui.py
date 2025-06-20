@@ -7,7 +7,7 @@ import numpy as np
 from Treecover_approach import*
 # from NDVI_PW import plot_ndvi_vs_negoal_gradient
 from PIL import Image, ImageTk
-from Health_cost import CostTableSelector
+from Health_cost import CostTableSelector, default_paths_option1
 from Run_option3 import Option3GUI
 from Run_option2 import Option2GUI
 
@@ -139,16 +139,7 @@ class InvestGUI:
             "Output Folder:"
         ]
 
-        default_paths = [
-            r"G:\Shared drives\invest-health\data\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
-            r"G:\Shared drives\invest-health\data\0_input_data\aoi\cb_2019_06_tract_500k.shp",
-            r"G:\Shared drives\invest-health\data\0_input_data\population\usa_ppp_2020_UNadj_constrained_SF_proj_setnull.tif",
-            r"G:\Shared drives\invest-health\data\0_input_data\ndvi\ndvi_s2_075_2019_10m_v2.tif",
-            r"G:\Shared drives\invest-health\data\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
-            r"G:\Shared drives\invest-health\data\0_input_data\risk\baseline_incidence_rate_06075_2019.shp",
-            r"G:\Shared drives\invest-health\data\0_input_data\health_effect_size_table.xlsx",
-            r"D:\natcap\invest-mental-health\data\output"
-        ]
+        default_paths = default_paths_option1
 
         for i in range(8):
             label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="e",font=("Arial", 12))
