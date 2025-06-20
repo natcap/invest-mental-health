@@ -522,7 +522,7 @@ def plot_pd_map_v1(PD_raster_path, aoi_gdf, return_fig=False, output_dir=None, o
     from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
 
     # redefine set center as white FFFFFFF
-    cmap = LinearSegmentedColormap.from_list("custom_RdBu", ["blue", "white", "red"])
+    cmap = LinearSegmentedColormap.from_list("custom_RdBu", ["#b2182b", "white", "#2166ac"], 256)
 
     norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
 
@@ -616,7 +616,7 @@ def plot_pd_by_tract_sum(pd_raster_path, tract_gdf, output_dir, output_name="PD_
     fig, ax = plt.subplots(figsize=(6, 4.5), constrained_layout=True)
     tract_gdf.plot(
         column="PD_sum",
-        cmap="coolwarm",
+        cmap="coolwarm_r",
         linewidth=0,
         edgecolor=None,
         norm=norm,
@@ -627,7 +627,7 @@ def plot_pd_by_tract_sum(pd_raster_path, tract_gdf, output_dir, output_name="PD_
     tract_gdf.boundary.plot(ax=ax, edgecolor="black", linewidth=0.5)
 
     # Add colorbar
-    sm = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm")
+    sm = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm_r")
     sm._A = []
     cbar = fig.colorbar(sm, ax=ax, orientation="vertical", fraction=0.046, pad=0.04)
     cbar.set_label("Total PD_i per Tract", fontsize=9)
