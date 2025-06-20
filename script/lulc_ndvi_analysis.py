@@ -8,7 +8,7 @@ from rasterio.warp import reproject, Resampling
 from rasterio.enums import Resampling as ResampleEnum
 from rasterio.transform import array_bounds
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize, TwoSlopeNorm
+from matplotlib.colors import Normalize, TwoSlopeNorm, LinearSegmentedColormap
 from matplotlib.ticker import FormatStrFormatter
 from typing import Tuple, Dict, Union, List
 from Treecover_approach import load_health_effects
@@ -480,19 +480,20 @@ def plot_pd_map_v1(PD_raster_path, aoi_gdf, return_fig=False, output_dir=None, o
     Saves or returns figure depending on `return_fig`.
     """
     print(">>> output_dir55555 =", output_dir)
-    import rasterio
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import matplotlib.colors as mcolors
-    import geopandas as gpd
-    from shapely.geometry import MultiPolygon
-    from rasterio.mask import mask as rio_mask
-    import os
+    # import rasterio
+    # import numpy as np
+    # import matplotlib.pyplot as plt
+    # import matplotlib.colors as mcolors
+    # import geopandas as gpd
+    # from shapely.geometry import MultiPolygon
+    # from rasterio.mask import mask as rio_mask
+    # import os
     print(">> Generating Figure_7 using:", PD_raster_path)
     print(">>> output_dir =", output_dir)
     with rasterio.open(PD_raster_path) as src:
         PD_masked, PD_transform = rio_mask(src, aoi_gdf.geometry, crop=True, nodata=src.nodata, filled=True)
         PD_masked = np.where(PD_masked == src.nodata, np.nan, PD_masked)
+        # PD_masked = np.where(PD_masked == 0, 999, PD_masked)
         # PD_masked = np.where(PD_masked < 0, np.nan, PD_masked)
 
 
@@ -518,8 +519,12 @@ def plot_pd_map_v1(PD_raster_path, aoi_gdf, return_fig=False, output_dir=None, o
     if vmax <= 0:
         vmax = 1e-6
 
+    from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
+
+    # redefine set center as white FFFFFFF
+    cmap = LinearSegmentedColormap.from_list("custom_RdBu", ["blue", "white", "red"])
+
     norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
-    cmap = "RdBu_r"
 
     pd_extent = [
         PD_meta["transform"][2],
@@ -746,40 +751,55 @@ def run_ndvi_option2_pipeline(aoi_path: str,
 
     # read table
     attr_df = pd.read_excel(nlcd_attr_table_path)
-    code_to_ndvi = dict(zip(attr_df["lc_code"], attr_df["lc_ndvi"]))
+    code_to_ndvi = {}
+    code_to_mask = {}
+    for _, row in attr_df.iterrows():
+        code = row["lc_code"]
+        ndvi_val = row["lc_ndvi"]
+        exclude = row.get("lc_exclude", 0)
+        if pd.notna(ndvi_val):
+            code_to_ndvi[code] = ndvi_val
+            code_to_mask[code] = 0 if exclude == 1 else 1
 
+    #  2011
     with rasterio.open(nlcd_2011_path) as src:
         boundary_proj = analyzer.aoi_gdf.to_crs(src.crs)
         geometry = boundary_proj.geometry.values[0]
         nlcd_2011_clip, meta_2011 = analyzer.clip_raster(nlcd_2011_path, geometry)
 
     ndvi_2011 = np.full_like(nlcd_2011_clip, -9999, dtype=np.float32)
+    mask_2011 = np.zeros_like(nlcd_2011_clip, dtype=np.uint8)
     for code, ndvi_val in code_to_ndvi.items():
-        if pd.notna(ndvi_val):
-            ndvi_2011[nlcd_2011_clip == code] = ndvi_val
+        ndvi_2011[nlcd_2011_clip == code] = ndvi_val
+    for code, mask_val in code_to_mask.items():
+        mask_2011[nlcd_2011_clip == code] = mask_val
 
     meta_2011.update({"dtype": "float32", "nodata": -9999})
-    fig3_path = analyzer.save_and_plot_ndvi(ndvi_2011, meta_2011, boundary_proj,
+    fig3_path = analyzer.save_and_plot_ndvi(np.where(mask_2011 == 1, ndvi_2011, np.nan), meta_2011, boundary_proj,
                                             "op2_Figure_3", "NDVI from NLCD - 2011")
 
+    # 2021
     with rasterio.open(nlcd_2021_path) as src:
         nlcd_2021_clip, meta_2021 = analyzer.clip_raster(nlcd_2021_path, geometry)
 
     ndvi_2021 = np.full_like(nlcd_2021_clip, -9999, dtype=np.float32)
+    mask_2021 = np.zeros_like(nlcd_2021_clip, dtype=np.uint8)
     for code, ndvi_val in code_to_ndvi.items():
-        if pd.notna(ndvi_val):
-            ndvi_2021[nlcd_2021_clip == code] = ndvi_val
+        ndvi_2021[nlcd_2021_clip == code] = ndvi_val
+    for code, mask_val in code_to_mask.items():
+        mask_2021[nlcd_2021_clip == code] = mask_val
 
     meta_2021.update({"dtype": "float32", "nodata": -9999})
-    fig4_path = analyzer.save_and_plot_ndvi(ndvi_2021, meta_2021, boundary_proj,
+    fig4_path = analyzer.save_and_plot_ndvi(np.where(mask_2021 == 1, ndvi_2021, np.nan), meta_2021, boundary_proj,
                                             "op2_Figure_4", "NDVI from NLCD - 2021")
 
-
+    # NDVI diff
     ndvi_diff_raw, meta_diff = analyzer.calculate_ndvi_difference(ndvi_2011, ndvi_2021, meta_2011)
-    fig5_path = analyzer.plot_ndvi_difference(ndvi_diff_raw, meta_diff, boundary_proj,
+    mask_common = (mask_2011 == 1) & (mask_2021 == 1)
+    fig5_path = analyzer.plot_ndvi_difference(np.where(mask_common, ndvi_diff_raw, np.nan), meta_diff, boundary_proj,
                                               "op2_Figure_5", "NDVI Change (2021 - 2011)")
 
-
+    # population
     with rasterio.open(pop_raster_path) as src:
         pop_meta = src.meta.copy()
         ref_shape = (pop_meta["height"], pop_meta["width"])
@@ -794,7 +814,7 @@ def run_ndvi_option2_pipeline(aoi_path: str,
         reference_crs=ref_crs
     )
 
-
+    # PD analysis
     compute_pd_from_ndvi_change(
         delta_ndvi=ndvi_diff,
         pop_raster_path=pop_raster_path,
