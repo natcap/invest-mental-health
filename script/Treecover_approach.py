@@ -35,9 +35,9 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     import statsmodels.api as sm
     from rasterio.enums import Resampling
 
-    from NDVI_PW import reproject_shapefile, reproject_raster, clip_raster, resample_raster_to_target, calculate_weighted_ndvi
-    from Tree_Cover import compute_zonal_statistics
-    from Result import merge_ndvi_landcover_data
+    # from NDVI_PW import reproject_shapefile, reproject_raster, clip_raster, resample_raster_to_target, calculate_weighted_ndvi
+    # from Tree_Cover import compute_zonal_statistics
+    # from Result import merge_ndvi_landcover_data
 
     target_crs = "EPSG:5070"
 
@@ -52,7 +52,7 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     aoi_adm2_clipped = aoi_adm2_clipped[aoi_adm2_clipped.area > 100]
 
     # 2. Process population raster
-    pop_dst_path = pop_path.replace("_setnull", "")
+    pop_dst_path = pop_path.replace("_setnull", "").replace(".tif", "_reprojected.tif")
     pop_dst_clip = pop_dst_path.replace(".tif", "_clipped.tif")
     reproject_raster(pop_path, target_crs, pop_dst_path)
     clip_raster(pop_dst_path, aoi_adm1_geometry, pop_dst_clip)
@@ -108,9 +108,10 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     aoi_adm2_raw_clipped = gpd.clip(aoi_adm2_raw, aoi_adm1)
     aoi_adm2_raw_clipped = aoi_adm2_raw_clipped[aoi_adm2_raw_clipped.area > 100]
 
+
     # calculate zonal stats
     df_stats = compute_zonal_statistics(aoi_adm2_raw_clipped, raster_clipped_path)
-    df_stats["GEOID"] = aoi_adm2_raw_clipped["GEOID"].values  # 保证对齐
+    df_stats["GEOID"] = aoi_adm2_raw_clipped["GEOID"].values
     aoi_joined = aoi_adm2_raw_clipped.merge(df_stats, on="GEOID")
 
     tree_fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -216,15 +217,22 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
     meta.update({"nodata": np.nan})
 
     # Save the cleaned raster to disk
-    cleaned_raster_path = os.path.join(output_dir, "PD_i_cleaned.tif")
+    cleaned_raster_path = os.path.join(output_dir, "Prev_case.tif")
     with rasterio.open(cleaned_raster_path, "w", **meta) as dst:
         dst.write(PD_data_clean, 1)
 
-    # Perform zonal statistics (sum of PD_i within each tract)
-    zonal_result = zonal_stats(aoi_adm2_clipped, cleaned_raster_path, stats="sum", nodata=np.nan)
+    PD_cost = PD_data_clean * (cost_value / 1000)
+
+    cost_raster_path = os.path.join(output_dir, "Prev_cost_pixel.tif")
+    with rasterio.open(cost_raster_path, "w", **meta) as dst:
+        dst.write(PD_cost, 1)
+
+
+    # Perform zonal statistics (sum of PD_cost within each tract)
+    zonal_result = zonal_stats(aoi_adm2_clipped, cost_raster_path, stats="sum", nodata=np.nan)
 
     # Multiply sum by cost value to get preventable cost per tract
-    sum_values = [round(stat["sum"] * cost_value/1000, 2) if stat["sum"] is not None else 0 for stat in zonal_result]
+    sum_values = [round(stat["sum"], 2) if stat["sum"] is not None else 0 for stat in zonal_result]
     aoi_adm2_clipped["PD_i_sum_cost"] = sum_values
 
     # Set color normalization and color map
@@ -317,8 +325,13 @@ def simulate_cost_vs_treecover(x_lowess, y_lowess, Pop_array, baseline_ndvi_rast
     import numpy as np
     import matplotlib.pyplot as plt
 
-    tree_cover_range = np.linspace(min(x_lowess), max(x_lowess), 50)
+    # tree_cover_range = np.linspace(min(x_lowess), max(x_lowess), 50)
+    start = (min(x_lowess) // 5) * 5
+    end = ((max(x_lowess) + 4) // 5) * 5 + 5
+    tree_cover_range = list(np.arange(start, end + 1, 5))
+
     total_costs = []
+
     cumulative_cost = 0
     highlight_cost = None  # for selected_cover red dot
 
@@ -354,8 +367,8 @@ def simulate_cost_vs_treecover(x_lowess, y_lowess, Pop_array, baseline_ndvi_rast
         mask = PD_values > 0
         total_PD_gt0 = np.nansum(PD_values[mask])
         # total_PD_gt0 = np.nansum(PD_values[mask] * Pop_array[mask])
-        print(f"PD_i > 0 的像素数量: {np.count_nonzero(mask)}")
-        print(f"PD_i > 0 的总值（×Pop）: {total_PD_gt0:,.0f}")
+        print(f"PD_i > 0 pixel number: {np.count_nonzero(mask)}")
+        print(f"PD_i > 0 total value（×Pop）: {total_PD_gt0:,.0f}")
 
     ax.set_title("Total Preventable Cost(1000 USD) by Tree Cover Gradient", fontsize=12)
     ax.grid(True)
@@ -387,7 +400,7 @@ def process_shapefile(shp_path, target_crs, aoi_boundary):
 def compute_zonal_statistics(aoi_shapefile, raster_path):
     """Compute zonal statistics (categorical) for each census tract."""
     stats = zonal_stats(aoi_shapefile, raster_path, categorical=True, nodata=-9999)
-
+    # aoi_shapefile = aoi_shapefile.rename(columns={"geoid10": "GEOID"})
     # Get unique land cover classes
     unique_classes = sorted(set(key for stat in stats for key in stat.keys()))
 
@@ -402,6 +415,9 @@ def compute_zonal_statistics(aoi_shapefile, raster_path):
         percent_stats.append(tract_percent)
 
     df = pd.DataFrame(percent_stats)
+
+    print("Columns in aoi shapefile:", aoi_shapefile.columns)
+
     df["GEOID"] = aoi_shapefile["GEOID"].values  # Ensure merge compatibility
     return df
 
@@ -554,6 +570,18 @@ def calculate_weighted_ndvi(polygon, ndvi_path, pop_path):
     ndvi_clip = ndvi_clip_data[0].astype(np.float32)
     pop_clip = pop_clip_data[0].astype(np.float32)
 
+
+    ndvi_clip[ndvi_clip <= -1e4] = np.nan
+    ndvi_clip[ndvi_clip > 1] = np.nan
+
+
+    pop_clip[pop_clip <= 0] = np.nan
+    pop_clip[pop_clip > 1e8] = np.nan
+
+    # print("NDVI nodata:", ndvi_nodata)
+    # print("POP nodata:", pop_nodata)
+    # print("NDVI min/max:", np.nanmin(ndvi_clip), np.nanmax(ndvi_clip))
+    # print("POP min/max:", np.nanmin(pop_clip), np.nanmax(pop_clip))
     if ndvi_nodata is not None:
         ndvi_clip[ndvi_clip == ndvi_nodata] = np.nan
     if pop_nodata is not None:
@@ -1230,3 +1258,18 @@ def plot_pd_map_v3(PD_masked, PD_meta, aoi_gdf, figures_dir, output_name="PD_ris
     output_path = os.path.join(figures_dir, output_name)
     if return_fig:
         return fig
+
+
+def safe_raster_write(path, meta, data):
+
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+            print(f"Removed existing file: {path}")
+    except Exception as e:
+        print(f"Failed to remove existing file: {e}")
+        path = path.replace(".tif", "_new.tif")
+        print(f"Switching to new output path: {path}")
+
+    with rasterio.open(path, 'w', **meta) as dst:
+        dst.write(data, 1)
