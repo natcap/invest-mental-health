@@ -18,6 +18,8 @@ source("./code/_dir_packages.R")
 
 ## Load data
 
+  These data were generated from `urban_nature_health_macro\code\021_CDC PLACES.Rmd`
+
 ```{r message=FALSE, include=FALSE}
 
 library(sf)
