@@ -111,7 +111,6 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
 
     # calculate zonal stats
     df_stats = compute_zonal_statistics(aoi_adm2_raw_clipped, raster_clipped_path)
-    df_stats["GEOID"] = aoi_adm2_raw_clipped["GEOID"].values
     aoi_joined = aoi_adm2_raw_clipped.merge(df_stats, on="GEOID")
 
     tree_fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -879,6 +878,7 @@ def load_baseline_risk_from_shapefile(
     gdf = gpd.read_file(shapefile_path)
 
     # Validate required columns
+    print("Columns in risk shapefile:", gdf.columns)
     if geoid_col not in gdf.columns:
         raise ValueError(f"Shapefile missing required column: {geoid_col}")
     if risk_col not in gdf.columns:

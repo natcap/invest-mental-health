@@ -133,7 +133,7 @@ class InvestGUI:
             "AOI Tract Shapefile:",
             "Population Raster:",
             "NDVI Raster:",
-            "Tree Cover Raster (ESA WorldCover):",
+            "Tree Cover Raster:",
             "Baseline Risk Shapefile:",
             "Health Effect Excel Table:",
             "Output Folder:"
@@ -142,8 +142,8 @@ class InvestGUI:
         default_paths = default_paths_option1
 
         for i in range(8):
-            label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="e",font=("Arial", 12))
-            label.grid(row=i, column=0, sticky="e", padx=5, pady=5)
+            label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="w",font=("Arial", 12))
+            label.grid(row=i, column=0, sticky="w", padx=5, pady=5)
 
 
 ######### Edit entry dialog length##########

@@ -13,6 +13,17 @@ default_paths_option1 = [
             r"G:\Shared drives\invest-health\data\output_result"
         ]
 
+# default_paths_option1 = [
+#             r"G:\Shared drives\invest-health\data\0_input_data\data_Erik\Chicago_Boundary\Chicago_aoi_boundary.shp",
+#             r"G:\Shared drives\invest-health\data\0_input_data\data_Erik\Chicago_Boundary\chicago_aoi_censustract_reproj.shp",
+#             r"G:\Shared drives\invest-health\data\0_input_data\population\usa_ppp_2020_UNadj_constrained_Chicago.tif",
+#             r"G:\Shared drives\invest-health\data\0_input_data\data_Erik\chicago_NDVI_2013_prj_clipped.tif",
+#             r"G:\Shared drives\invest-health\data\0_input_data\data_Erik\TreeCover\Tree_Cover_Clipped.tif",
+#             r"G:\Shared drives\invest-health\data\0_input_data\data_Erik\BaselineRisk\chicago_aoi_baselinerisk_final.shp",
+#             r"G:\Shared drives\invest-health\data\0_input_data\health_effect_size_table.xlsx",
+#             r"G:\Shared drives\invest-health\data\0_input_data\data_Erik\output"
+#         ]
+
 default_paths_option2 = [
     r"G:\Shared drives\invest-health\data\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
     r"G:\Shared drives\invest-health\data\0_input_data\aoi\cb_2019_06_tract_500k.shp",

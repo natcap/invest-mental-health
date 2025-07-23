@@ -4,7 +4,7 @@ import pandas as pd
 import geopandas as gpd
 import rasterio
 from rasterio.mask import mask as rio_mask
-from rasterio.warp import reproject, Resampling
+from rasterio.warp import reproject, Resampling, calculate_default_transform
 from rasterio.enums import Resampling as ResampleEnum
 from rasterio.transform import array_bounds
 import matplotlib.pyplot as plt
@@ -522,7 +522,7 @@ def plot_pd_map_v1(PD_raster_path, aoi_gdf, return_fig=False, output_dir=None, o
     from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
 
     # redefine set center as white FFFFFFF
-    cmap = LinearSegmentedColormap.from_list("custom_RdBu", ["#b2182b", "white", "#2166ac"], 256)
+    cmap = LinearSegmentedColormap.from_list("custom_RdBu", ["blue", "white", "red"])
 
     norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
 
@@ -581,6 +581,18 @@ def plot_pd_by_tract_sum(pd_raster_path, tract_gdf, output_dir, output_name="PD_
     from matplotlib.colors import Normalize
     import os
 
+    cost_raster_path = os.path.join(output_dir, "Prev_cost_pixel.tif")
+    with rasterio.open(pd_raster_path) as src:
+        pd_data = src.read(1)
+        nodata_val = src.nodata
+        meta = src.meta.copy()
+
+        pd_cost_data = np.where(pd_data != nodata_val, pd_data * cost_value / 1000, nodata_val)
+        meta.update(dtype="float32")
+
+        with rasterio.open(cost_raster_path, "w", **meta) as dst:
+            dst.write(pd_cost_data.astype("float32"), 1)
+
     # Compute the sum of values within each tract
     sums = []
     with rasterio.open(pd_raster_path) as src:
@@ -592,12 +604,10 @@ def plot_pd_by_tract_sum(pd_raster_path, tract_gdf, output_dir, output_name="PD_
                 nodata_val = src.nodata
                 if nodata_val is not None:
                     data = data[data != nodata_val]
-
-
                 # if data.size > 0:
                     # print("Min value in this tract:", np.min(data))
                 # sums.append(np.nansum(data) if data.size > 0 else np.nan)
-                sums.append(np.sum(data)*cost_value/1000)
+                sums.append(np.sum(data))
             except:
 
                 sums.append(np.nan)
@@ -616,7 +626,7 @@ def plot_pd_by_tract_sum(pd_raster_path, tract_gdf, output_dir, output_name="PD_
     fig, ax = plt.subplots(figsize=(6, 4.5), constrained_layout=True)
     tract_gdf.plot(
         column="PD_sum",
-        cmap="coolwarm_r",
+        cmap="coolwarm",
         linewidth=0,
         edgecolor=None,
         norm=norm,
@@ -627,7 +637,7 @@ def plot_pd_by_tract_sum(pd_raster_path, tract_gdf, output_dir, output_name="PD_
     tract_gdf.boundary.plot(ax=ax, edgecolor="black", linewidth=0.5)
 
     # Add colorbar
-    sm = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm_r")
+    sm = plt.cm.ScalarMappable(norm=norm, cmap="coolwarm")
     sm._A = []
     cbar = fig.colorbar(sm, ax=ax, orientation="vertical", fraction=0.046, pad=0.04)
     cbar.set_label("Total PD_i per Tract", fontsize=9)
@@ -683,9 +693,15 @@ def run_ndvi_option3_pipeline(aoi_path, ndvi_2011_path, ndvi_2021_path,
 
         analyzer = NDVI_LULC_Analyzer(aoi_path, output_dir)
 
+        # Reproject NDVI rasters to EPSG:5070 before plotting
+        ndvi_2011_proj = os.path.join(output_dir, "ndvi_2011_proj.tif")
+        ndvi_2021_proj = os.path.join(output_dir, "ndvi_2021_proj.tif")
+        reproject_to_epsg5070(ndvi_2011_path, ndvi_2011_proj)
+        reproject_to_epsg5070(ndvi_2021_path, ndvi_2021_proj)
+
         # fig 1 & fig 2
-        analyzer.plot_raw_ndvi(ndvi_2011_path, "Figure_1")
-        analyzer.plot_raw_ndvi(ndvi_2021_path, "Figure_2")
+        analyzer.plot_raw_ndvi(ndvi_2011_proj, "Figure_1")
+        analyzer.plot_raw_ndvi(ndvi_2021_proj, "Figure_2")
 
         # fig 3
         df_2011, nlcd_2011, meta_2011, aoi_proj = analyzer.process_nlcd_with_ndvi(lc_2011_path, ndvi_2011_path, "2011")
@@ -826,6 +842,30 @@ def run_ndvi_option2_pipeline(aoi_path: str,
         health_indicator_i="depression",
         cost_value=cost_value
     )
+
+
+def reproject_to_epsg5070(src_path, dst_path):
+    with rasterio.open(src_path) as src:
+        transform, width, height = calculate_default_transform(
+            src.crs, "EPSG:5070", src.width, src.height, *src.bounds)
+        kwargs = src.meta.copy()
+        kwargs.update({
+            "crs": "EPSG:5070",
+            "transform": transform,
+            "width": width,
+            "height": height
+        })
+        with rasterio.open(dst_path, "w", **kwargs) as dst:
+            for i in range(1, src.count + 1):
+                reproject(
+                    source=rasterio.band(src, i),
+                    destination=rasterio.band(dst, i),
+                    src_transform=src.transform,
+                    src_crs=src.crs,
+                    dst_transform=transform,
+                    dst_crs="EPSG:5070",
+                    resampling=ResampleEnum.bilinear
+                )
 
 if __name__ == "__main__":
     run_ndvi_option3_pipeline()
