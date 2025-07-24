@@ -1,0 +1,183 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+## R setup
+
+```{r include=FALSE}
+rm(list = ls())
+
+source("./code/_dir_packages.R")
+
+library(sf)
+library(tidycensus)
+library(tigris)
+
+library(ggplot2)
+library(viridis)
+```
+
+
+
+
+## aoi 
+
+```{r - load data 1, include=FALSE}
+
+v <- ''
+
+dir.shp <- 'D:/data/shp/US_census_Cartographic_Boundary_Shapefiles/UAC/'
+
+dir.met <- paste0(dir.shp, 'cb_2024_us_cbsa_500k/cb_2024_us_cbsa_500k.shp')
+dir.ua  <- paste0(dir.shp, 'cb_2020_us_ua20_500k/cb_2020_us_ua20_500k.shp')
+dir.place <- paste0(dir.shp, 'cb_2020_us_place_500k/cb_2020_us_place_500k.shp')
+
+dat.met <- st_read(dir.met) 
+dat.ua <- st_read(dir.ua)  
+dat.place <- st_read(dir.place)
+```
+
+
+
+
+```{r - load data 2, include=FALSE}
+
+# v <- '_tract' ## aoi with tracts
+# 
+# 
+# dir.aoi <- './data/aoi/'
+# 
+# dir.met   <- paste0(dir.aoi, 'tract_metro_2020.shp')
+# dir.ua    <- paste0(dir.aoi, 'tract_ua_2020_py.shp')
+# dir.place <- paste0(dir.aoi, 'tract_place_2020.shp')
+# 
+# dat.met <- st_read(dir.met) %>% rename('NAME' = 'NAME_METRO')
+# dat.ua <- st_read(dir.ua)  
+# dat.place <- st_read(dir.place) %>% rename('NAME' = 'NAME_PLACE')
+
+```
+
+
+
+```{r - list of cities}
+# filter city 
+cities <- c("San Francisco", 
+            # "New York", "Chicago", 
+            # "Seattle", "Pittsburgh",
+            "Bend",
+            "San Antonio", "Los Angeles", 
+            "Minneapolis")
+
+
+# ## an example city
+# city.i <- "San Francisco"
+# 
+# 
+# # met.i <- dat.met %>%
+# #   filter(str_detect(NAME, paste(cities, collapse = "|")))
+# 
+# 
+# met.i <- dat.met %>%
+#   filter(str_detect(NAME, city.i))
+# 
+# ua.i <- dat.ua %>%
+#   filter(str_detect(NAME20, city.i))
+# 
+# place.i <- dat.place %>%
+#   filter(str_starts(NAME, city.i))
+
+
+```
+
+
+
+```{r - plot}
+
+library(tmap)
+
+
+## loop map all the cities
+for (city.i in cities) {
+  
+  
+  met.i <- dat.met %>%
+    filter(str_starts(NAME, city.i))
+  
+  ua.i <- dat.ua %>%
+    filter(str_detect(NAME20, city.i))
+  
+  place.i <- dat.place %>%
+    filter(str_starts(NAME, city.i))
+  
+  
+  
+  # Plot the layers
+  map <- 
+    tm_shape(met.i) +
+    tm_borders(col = "black", lwd = 2.5, alpha = 0.6) +
+    tm_shape(ua.i) +
+    tm_borders(col = "blue", lwd = 1.5, alpha = 0.6) +
+    tm_shape(place.i) +
+    tm_borders(col = "red", lwd = 1, alpha = 1) +
+    tm_layout(title = city.i, 
+              title.position = c("center", "top"),
+              frame = FALSE,
+              legend.outside = F) +
+    tm_add_legend(type = "line",
+                labels = c("Metro", "Urban Area", "Place"),
+                col = c("black", "blue", "red"),
+                lwd = c(2, 1, 0.5),
+                title = "Map Layers")
+  map
+  # Save the map to file
+  f <- paste0(dir.figures, "map_layers_", city.i, v, ".png")
+  tmap_save(tm = map, filename = f, dpi = 300, width = 180, height = 150, units = "mm")
+
+}
+
+
+```
+
+
+
+```{r eval=FALSE, include=FALSE}
+library(tmap)
+library(sf)
+library(dplyr)
+
+# Create a dummy column for legend labeling
+met.i$layer <- "Metro"
+ua.i$layer <- "Urban Area"
+place.i$layer <- "Place"
+
+# Make sure all use the same CRS
+ua.i <- st_transform(ua.i, st_crs(met.i))
+place.i <- st_transform(place.i, st_crs(met.i))
+
+# Combine all three layers into one sf object
+combined <- bind_rows(
+  met.i %>% select(geometry, layer),
+  ua.i %>% select(geometry, layer),
+  place.i %>% select(geometry, layer)
+)
+
+# Plot with legend
+tm_shape(combined) +
+  tm_fill(col = "layer", alpha = 0.3, 
+          palette = c("Metro" = "black", "Urban Area" = "blue", "Place" = "red"), 
+          title = "Layer") +
+  tm_borders(col = "gray") +
+  tm_layout(title = "", legend.outside = F)
+
+```
+
+
+
+
+
