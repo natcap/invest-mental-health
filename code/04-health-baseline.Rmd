@@ -85,3 +85,28 @@ tmap_save(filename = f, width = 7, height = 5)
 
 ```
 
+
+
+### average prevelance by city 
+
+```{r}
+
+library(sf)
+library(dplyr)
+
+dir.dat <- "G:/.shortcut-targets-by-id/1IxrYwiGiE0Nv92NbpTlq0AvOoDVNM35a/Inverst-health-city/City/"
+f <- file.path(dir.dat, 'Boston', "aoi_Boston.shp")
+aoi <- st_read(f)
+
+dir.dat <- "G:/Shared drives/invest-health/data/0_input_data/risk/"
+f <- file.path(dir.dat, 'prevalence_rate_usa_2021.shp')
+
+large_shapefile <- st_read(f)
+```
+
+
+```{r - clip}
+
+## I have changed to do this in Python ... 
+```
+
