@@ -4,7 +4,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 # from Main import run_ndvi_tree_analysis, run_pd_analysis
 import numpy as np
-from Treecover_approach import*
+from Treecover_approach import *
 # from NDVI_PW import plot_ndvi_vs_negoal_gradient
 from PIL import Image, ImageTk
 from Health_cost import CostTableSelector, default_paths_option1
@@ -24,7 +24,7 @@ class FlowchartApp:
         self.flow_frame.pack(fill="both", expand=True)
 
         # Load and show flowchart image
-        img_path = r"D:/natcap/invest-mental-health/figures/_flow_chart.png"
+        img_path = r"C:\Users\74007\Downloads\Stanford University\0_input_data\flow_chart_1.png"
         image = Image.open(img_path)
         image = image.resize((1300, 910), Image.Resampling.LANCZOS)
         self.photo = ImageTk.PhotoImage(image)
@@ -36,9 +36,12 @@ class FlowchartApp:
         button_frame = tk.Frame(self.flow_frame)
         button_frame.pack()
 
-        tk.Button(button_frame, text="Option 1", font=("Arial", 14), command=self.launch_option_1).grid(row=0, column=0, padx=20)
-        tk.Button(button_frame, text="Option 2", font=("Arial", 14), command=self.launch_option_2).grid(row=0, column=1, padx=20)
-        tk.Button(button_frame, text="Option 3", font=("Arial", 14), command=self.launch_option_3).grid(row=0, column=2, padx=20)
+        tk.Button(button_frame, text="Option 1", font=("Arial", 14), command=self.launch_option_1).grid(row=0, column=0,
+                                                                                                        padx=20)
+        tk.Button(button_frame, text="Option 2", font=("Arial", 14), command=self.launch_option_2).grid(row=0, column=1,
+                                                                                                        padx=20)
+        tk.Button(button_frame, text="Option 3", font=("Arial", 14), command=self.launch_option_3).grid(row=0, column=2,
+                                                                                                        padx=20)
 
     def launch_option_3(self):
         self.flow_frame.destroy()
@@ -73,8 +76,6 @@ class InvestGUI:
         self.left_frame.grid(row=0, column=0, sticky="ns", padx=(10, 5), pady=10)
         self.left_frame.grid_propagate(False)  # Prevent resizing by content
 
-
-
         self.separator = tk.Frame(root, width=2, bg="gray", relief="sunken")
         self.separator.grid(row=0, column=1, sticky="ns")
 
@@ -94,7 +95,8 @@ class InvestGUI:
         self.right_canvas.create_window((0, 0), window=self.right_frame, anchor="nw")
 
         # Scroll region updates
-        self.right_frame.bind("<Configure>", lambda e: self.right_canvas.configure(scrollregion=self.right_canvas.bbox("all")))
+        self.right_frame.bind("<Configure>",
+                              lambda e: self.right_canvas.configure(scrollregion=self.right_canvas.bbox("all")))
 
         root.grid_columnconfigure(0, weight=0)
         root.grid_columnconfigure(1, weight=0)
@@ -102,8 +104,8 @@ class InvestGUI:
         root.grid_rowconfigure(0, weight=1)
 
         # Run status and button
-        # self.log_label = tk.Label(self.left_frame, text="Status: Waiting to run", anchor="w", justify="left")
-        self.log_label = tk.Label(self.left_frame, text="Status: Waiting to run", wraplength=280, anchor="w", justify="left")
+        self.log_label = tk.Label(self.left_frame, text="Status: Waiting to run", wraplength=280, anchor="w",
+                                  justify="left")
         self.log_label.pack(fill="x", pady=(0, 20))
 
         # RUN button first (appears at the very bottom)
@@ -120,40 +122,40 @@ class InvestGUI:
         )
         self.back_button.pack(side="bottom", pady=(0, 10), fill="x")
 
-
         # Input section
         self.right_input_frame = tk.Frame(self.right_frame)
         self.right_input_frame.pack(fill="both", expand=True)
-        self.right_canvas.bind_all("<MouseWheel>", lambda event: self.right_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units"))
-
+        self.right_canvas.bind_all("<MouseWheel>",
+                                   lambda event: self.right_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units"))
 
         self.input_entries = []
+        # Modified: Updated input file labels to match batch process requirements
         self.input_labels = [
             "AOI County Shapefile:",
             "AOI Tract Shapefile:",
             "Population Raster:",
             "NDVI Raster:",
             "Tree Cover Raster:",
-            "Baseline Risk Shapefile:",
+            "Risk Raster:",  # Changed from "Baseline Risk Shapefile" to "Risk Raster"
             "Health Effect Excel Table:",
             "Output Folder:"
         ]
 
         default_paths = default_paths_option1
 
+        # Keep 8 input files, but 6th one is now Risk Raster instead of Baseline Risk Shapefile
         for i in range(8):
-            label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="w",font=("Arial", 12))
+            label = tk.Label(self.right_input_frame, text=self.input_labels[i], anchor="w", font=("Arial", 12))
             label.grid(row=i, column=0, sticky="w", padx=5, pady=5)
 
-
-######### Edit entry dialog length##########
-            entry = tk.Entry(self.right_input_frame, width=130,font=("Arial", 12))
-######### Edit entry dialog length##########
+            # Adjust entry dialog length
+            entry = tk.Entry(self.right_input_frame, width=130, font=("Arial", 12))
             entry.grid(row=i, column=1, padx=5, pady=5, sticky="we")
             entry.insert(0, default_paths[i])
             self.input_entries.append(entry)
 
-            browse_btn = tk.Button(self.right_input_frame, text="Browse", font=("Arial", 12),command=lambda e=entry, i=i: self.browse_path(e, self.input_labels[i]))
+            browse_btn = tk.Button(self.right_input_frame, text="Browse", font=("Arial", 12),
+                                   command=lambda e=entry, i=i: self.browse_path(e, self.input_labels[i]))
             browse_btn.grid(row=i, column=2, padx=5, pady=5)
 
         for j in range(2):
@@ -164,9 +166,6 @@ class InvestGUI:
         self.cost_selector.frame.grid(row=11, column=0, columnspan=3, sticky="w", padx=5, pady=10)
 
         self.right_input_frame.grid_columnconfigure(1, weight=1)
-
-
-
 
     def browse_path(self, entry_widget, label_text):
         if "Folder" in label_text:
@@ -180,8 +179,6 @@ class InvestGUI:
     def handle_run(self):
         self.run_count += 1
         self.log_label.config(text=f"Status: Running step {self.run_count}...")
-        # self.log_label = tk.Label(self.left_frame, text=f"Status: Running step {self.run_count}...", wraplength=280, anchor="w",
-        #                           justify="left")
 
         if self.run_count == 1:
             self.paths = [e.get() for e in self.input_entries]
@@ -202,7 +199,10 @@ class InvestGUI:
             self.right_plot_frame_bottom = tk.Frame(self.right_plot_frame)
             self.right_plot_frame_bottom.pack(fill="x", expand=False)
 
-            ne_goal, ndvi_fig, tree_fig, slider_fig, self.x_lowess, self.y_lowess, self.aoi_adm2,self.ndvi_resampled_path = run_ndvi_tree_analysis(*self.paths)
+            # Fixed: Match batch process function call parameters exactly
+            # self.paths contains: [aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path, risk_path, effect_excel, output_dir]
+            ne_goal, ndvi_fig, tree_fig, slider_fig, self.x_lowess, self.y_lowess, self.aoi_adm2, self.ndvi_resampled_path = run_ndvi_tree_analysis(
+                *self.paths)
             self.vline = slider_fig.axes[0].axvline(30.0, color='gray', linestyle='--')
 
             self.display_figure(ndvi_fig, location="top", side="left")
@@ -217,9 +217,6 @@ class InvestGUI:
 
             self.ne_goal = ne_goal
             self.log_label.config(text=f"NE goal selected: {ne_goal:.3f}")
-            # self.log_label = tk.Label(self.left_frame, text=f"NE goal selected: {ne_goal:.3f}", wraplength=280,
-            #                           anchor="w",
-            #                           justify="left")
 
         elif self.run_count == 2:
             # Clear old figures in all three sections
@@ -230,15 +227,29 @@ class InvestGUI:
             for widget in self.right_plot_frame_bottom.winfo_children():
                 widget.destroy()
 
-            # health_cost_df = pd.read_excel(self.paths[7])
-            # cost_value = health_cost_df.loc[health_cost_df["region"] == "USA", "cost_value"].values[0]
             cost_value = self.cost_selector.df.loc[
                 self.cost_selector.df["region"] == self.cost_selector.combo_var.get(), "cost_value"
             ].values[0]
 
+            # Fixed: Match batch process function call parameters exactly
+            # Parameters: aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path, risk_path,
+            #            effect_excel, output_dir, ne_goal, aoi_adm2, x_lowess, y_lowess, cost_value
             fig1, fig2, fig_hist, fig_cost_curve, total_cases = run_pd_analysis(
-                *self.paths, self.ne_goal, self.aoi_adm2, self.x_lowess, self.y_lowess,cost_value
+                self.paths[0],  # aoi_adm1_path
+                self.paths[1],  # aoi_adm2_path
+                self.paths[2],  # pop_path
+                self.paths[3],  # ndvi_path
+                self.paths[4],  # tree_path
+                self.paths[5],  # risk_path
+                self.paths[6],  # effect_excel
+                self.paths[7],  # output_dir
+                self.ne_goal,  # ne_goal
+                self.aoi_adm2,  # aoi_adm2
+                self.x_lowess,  # x_lowess
+                self.y_lowess,  # y_lowess
+                cost_value  # cost_value
             )
+
             fig3 = plot_ndvi_vs_negoal_gradient(self.ndvi_resampled_path, self.aoi_adm2, self.ne_goal)
             self.display_figure(fig3, location="top", side="left")
             self.display_figure(fig2, location="top", side="right")
@@ -252,14 +263,12 @@ class InvestGUI:
 
             # Calculate summary message
             cover = self.slider_var.get()
-
             money_saved = total_cases * cost_value
 
             import textwrap
             message = f"{cover:.1f}% tree cover → {total_cases:,.0f} cases prevented, ${money_saved:,.0f} saved."
             wrapped_msg = textwrap.fill(message, width=35)
             self.log_label.config(text=wrapped_msg)
-
 
     def setup_slider_area(self, fig):
         self.slider_canvas = FigureCanvasTkAgg(fig, master=self.right_plot_frame_middle)
@@ -269,21 +278,19 @@ class InvestGUI:
         initial_cover = self.slider_var.get() if hasattr(self, "slider_var") else 30.0
         self.vline = self.slider_ax.axvline(initial_cover, color='gray', linestyle='--')
 
-
         slider_label = tk.Label(self.right_plot_frame_bottom, text="Tree Cover (%)")
         slider_label.pack(anchor="w")
 
         self.slider_var = tk.DoubleVar(value=30.0)
         self.slider = tk.Scale(
             self.right_plot_frame_bottom,
-            from_=min(self.x_lowess),
-            to=max(self.x_lowess),
+            from_=0,  # Fixed: Set minimum to 0% tree cover
+            to=100,  # Fixed: Set maximum to 100% tree cover
             resolution=0.5,
             orient="horizontal",
             variable=self.slider_var,
             command=self.update_ndvi_value
         )
-
 
         self.slider.pack()
 
@@ -293,9 +300,7 @@ class InvestGUI:
             if fig_width > 100:
                 self.slider.config(length=fig_width - 2)
 
-
         self.right_plot_frame_middle.after(100, self.update_slider_length)
-
 
         self.ndvi_display = tk.Label(self.right_plot_frame_bottom, text="Drag the slider", font=("Arial", 12))
         self.ndvi_display.pack(pady=5)
@@ -311,12 +316,10 @@ class InvestGUI:
             if fig_width > 200:
                 self.slider.config(length=int(fig_width * 0.9))
             else:
-
                 fallback_width = self.right_plot_frame_middle.winfo_width()
                 self.slider.config(length=int(fallback_width * 0.8))
         except Exception as e:
             print("Slider width update error:", e)
-
 
     def update_ndvi_value(self, val):
         cover = float(val)
@@ -326,21 +329,16 @@ class InvestGUI:
             self.slider_canvas.draw()
         self.ndvi_display.config(text=f"Tree cover target: {cover:.1f}% → Corresponding NDVI: {ndvi_val:.3f}")
 
-
     def confirm_ndvi(self):
         cover = self.slider_var.get()
         self.ne_goal = float(np.interp(cover, self.x_lowess, self.y_lowess))
         self.log_label.config(text=f"Confirmed NE_goal: {self.ne_goal:.3f}")
-        # self.log_label = tk.Label(self.left_frame, text=f"Confirmed NE_goal: {self.ne_goal:.3f}", wraplength=280,
-        #                           anchor="w",
-        #                           justify="left")
 
     def display_figure(self, fig, location="middle", side="left"):
         frame = {
             "top": self.right_plot_frame_top,
             "middle": self.right_plot_frame_middle
         }.get(location, self.right_plot_frame)
-
 
         col = 0 if side == "left" else 1
 
@@ -349,11 +347,10 @@ class InvestGUI:
         widget = canvas.get_tk_widget()
         widget.grid(row=0, column=col, padx=10, pady=10, sticky="nsew")
 
-
     def handle_back(self):
         if self.run_count == 2:
             self.run_count = 1
-            # clear images
+            # Clear images
             for section in [self.right_plot_frame_top, self.right_plot_frame_middle, self.right_plot_frame_bottom]:
                 for widget in section.winfo_children():
                     widget.destroy()
@@ -368,15 +365,9 @@ class InvestGUI:
             self.setup_slider_area(slider_fig)
             self.ne_goal = ne_goal
             self.log_label.config(text="Returned to NE_goal selection.")
-            # self.log_label = tk.Label(self.left_frame, text="Returned to NE_goal selection view.", wraplength=280,
-            #                           anchor="w",
-            #                           justify="left")
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    # root.geometry("1400x1200")
-    # root.state("zoomed")
     app = FlowchartApp(root)
-    # app = InvestGUI(root)
     root.mainloop()

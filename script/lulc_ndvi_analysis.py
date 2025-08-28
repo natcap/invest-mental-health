@@ -563,7 +563,7 @@ def plot_pd_map_v1(PD_raster_path, aoi_gdf, return_fig=False, output_dir=None, o
         fig_path = os.path.join(output_dir, output_name)
         # print("222")
         plt.savefig(fig_path, dpi=300)
-        print("✅ Saved figure:", fig_path)
+        print("Saved figure:", fig_path)
         plt.close(fig)
         return fig_path
     else:
