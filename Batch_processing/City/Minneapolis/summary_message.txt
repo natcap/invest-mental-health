@@ -1,0 +1,6 @@
+City: Minneapolis
+Current tree cover: 15.69%
+Target tree cover: 25.69% (+10.0%)
+Cases prevented: 70,516
+Money saved: $775,679,867
+Cost per case: $11,000

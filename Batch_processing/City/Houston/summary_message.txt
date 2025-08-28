@@ -1,0 +1,6 @@
+City: Houston
+Current tree cover: 18.04%
+Target tree cover: 28.04% (+10.0%)
+Cases prevented: 487,989
+Money saved: $5,367,882,781
+Cost per case: $11,000

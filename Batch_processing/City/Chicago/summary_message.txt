@@ -1,0 +1,6 @@
+City: Chicago
+Current tree cover: 6.62%
+Target tree cover: 16.62% (+10.0%)
+Cases prevented: 1,409,789
+Money saved: $15,507,676,250
+Cost per case: $11,000

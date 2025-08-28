@@ -1,0 +1,6 @@
+City: New_York
+Current tree cover: 11.79%
+Target tree cover: 21.79% (+10.0%)
+Cases prevented: 8,675,256
+Money saved: $95,427,816,000
+Cost per case: $11,000

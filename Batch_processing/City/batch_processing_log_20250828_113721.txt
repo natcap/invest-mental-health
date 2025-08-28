@@ -1,0 +1,608 @@
+Logging to: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\batch_processing_log_20250828_113721.txt
+Processing started at: 2025-08-28 11:37:21
+Tree cover increase target: 5.0%
+============================================================
+Health cost per case: $11000
+
+Step 1: Calculating current tree cover for each city...
+--------------------------------------------------
+Boston               → Current: 19.13%, Target: 24.13% (+5.0%)
+Chicago              → Current: 6.62%, Target: 11.62% (+5.0%)
+Denver               → Current: 6.37%, Target: 11.37% (+5.0%)
+Detroit              → Current: 10.65%, Target: 15.65% (+5.0%)
+Houston              → Current: 18.04%, Target: 23.04% (+5.0%)
+Los_Angeles          → Current: 8.68%, Target: 13.68% (+5.0%)
+Miami                → Current: 7.19%, Target: 12.19% (+5.0%)
+Minneapolis          → Current: 15.69%, Target: 20.69% (+5.0%)
+New_York             → Current: 11.79%, Target: 16.79% (+5.0%)
+Philadelphia         → Current: 16.53%, Target: 21.53% (+5.0%)
+Phoenix              → Current: 0.78%, Target: 5.78% (+5.0%)
+San_Antonio          → Current: 12.99%, Target: 17.99% (+5.0%)
+San_Diego            → Current: 7.43%, Target: 12.43% (+5.0%)
+San_Francisco        → Current: 6.83%, Target: 11.83% (+5.0%)
+Seattle              → Current: 20.38%, Target: 25.38% (+5.0%)
+
+Tree cover statistics saved to: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\treecover_stats.csv
+
+Step 2: Processing cities with health impact analysis...
+------------------------------------------------------------
+
+Processing Boston
+Current tree cover: 19.13%
+Target tree cover: 24.13%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 98.0
+Sample values: [ 0.  2.  3.  4.  5.  6.  7.  8.  9. 10.]
+Tree cover results:
+  Range: 0.0% - 65.8%
+  Mean: 14.0%
+  >50%: 4, >70%: 0
+  Sample values: [23.02590018951358, 27.184954280964256, 32.20375722543353, 22.395138496325607, 37.1026102610261]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.573, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=60,466, Decreased=15,522
+Health impact: 3,050 pixels, 243,581 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.127
+  Pixels with improvement: 57,036
+  Preventable cases: 10,947
+  Cost savings: $120,418k
+Tree cover 5.0%:
+  NDVI target: 0.272
+  Pixels with improvement: 60,875
+  Preventable cases: 175,646
+  Cost savings: $1,932,107k
+Tree cover 10.0%:
+  NDVI target: 0.350
+  Pixels with improvement: 63,372
+  Preventable cases: 405,554
+  Cost savings: $4,461,093k
+  Generating NDVI deviation plot...
+  Results: 243,581 cases prevented, $2,679,394,609 saved
+
+Processing Chicago
+Current tree cover: 6.62%
+Target tree cover: 11.62%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 97.0
+Sample values: [ 0.  2.  3.  4.  5.  6.  7.  8.  9. 10.]
+Tree cover results:
+  Range: 0.0% - 43.5%
+  Mean: 5.0%
+  >50%: 0, >70%: 0
+  Sample values: [21.723514211886304, 12.150767178118747, 12.740384615384615, 9.783164983164983, 14.833947939262472]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Chicago\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Chicago\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.478, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=213,422, Decreased=40,064
+Health impact: 33,706 pixels, 1,409,789 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.150
+  Pixels with improvement: 175,400
+  Preventable cases: 91,004
+  Cost savings: $1,001,044k
+Tree cover 5.0%:
+  NDVI target: 0.279
+  Pixels with improvement: 208,144
+  Preventable cases: 1,092,694
+  Cost savings: $12,019,637k
+Tree cover 10.0%:
+  NDVI target: 0.347
+  Pixels with improvement: 227,789
+  Preventable cases: 2,270,719
+  Cost savings: $24,977,907k
+  Generating NDVI deviation plot...
+  Results: 1,409,789 cases prevented, $15,507,676,250 saved
+
+Processing Denver
+Current tree cover: 6.37%
+Target tree cover: 11.37%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 74.0
+Sample values: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+Tree cover results:
+  Range: 0.0% - 18.7%
+  Mean: 9.5%
+  >50%: 0, >70%: 0
+  Sample values: [5.1972542212403345, 10.547186932849364, 13.985365853658537, 8.885933806146571, 8.797440699126092]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Denver\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Denver\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.508, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=210,899, Decreased=27,361
+Health impact: 9,420 pixels, 260,160 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.106
+  Pixels with improvement: 178,494
+  Preventable cases: 8,463
+  Cost savings: $93,094k
+Tree cover 5.0%:
+  NDVI target: 0.253
+  Pixels with improvement: 205,092
+  Preventable cases: 147,987
+  Cost savings: $1,627,855k
+Tree cover 10.0%:
+  NDVI target: 0.323
+  Pixels with improvement: 214,786
+  Preventable cases: 341,123
+  Cost savings: $3,752,352k
+  Generating NDVI deviation plot...
+  Results: 260,160 cases prevented, $2,861,762,234 saved
+
+Processing Detroit
+Current tree cover: 10.65%
+Target tree cover: 15.65%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 254.0
+Sample values: [ 0.  2.  3.  4.  5.  6.  7.  8.  9. 10.]
+Tree cover results:
+  Range: 0.3% - 37.0%
+  Mean: 10.8%
+  >50%: 0, >70%: 0
+  Sample values: [7.908880308880309, 10.51398916967509, 2.219015795868773, 13.180592991913747, 7.68172268907563]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Detroit\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Detroit\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.499, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=86,226, Decreased=48,780
+Health impact: 8,280 pixels, 81,221 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.191
+  Pixels with improvement: 78,574
+  Preventable cases: 14,490
+  Cost savings: $159,395k
+Tree cover 5.0%:
+  NDVI target: 0.360
+  Pixels with improvement: 95,229
+  Preventable cases: 183,310
+  Cost savings: $2,016,415k
+Tree cover 10.0%:
+  NDVI target: 0.402
+  Pixels with improvement: 103,380
+  Preventable cases: 313,897
+  Cost savings: $3,452,871k
+  Generating NDVI deviation plot...
+  Results: 81,221 cases prevented, $893,431,172 saved
+
+Processing Houston
+Current tree cover: 18.04%
+Target tree cover: 23.04%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 254.0
+Sample values: [ 0.  3.  4.  5.  6.  7.  8.  9. 10. 11.]
+Tree cover results:
+  Range: 0.5% - 66.2%
+  Mean: 12.7%
+  >50%: 5, >70%: 0
+  Sample values: [11.631550068587106, 10.077691624015447, 11.860824742268042, 8.153361344537815, 10.25044776119403]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Houston\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Houston\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.580, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=486,935, Decreased=334,405
+Health impact: 27,043 pixels, 487,989 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.207
+  Pixels with improvement: 459,990
+  Preventable cases: 91,538
+  Cost savings: $1,006,921k
+Tree cover 5.0%:
+  NDVI target: 0.350
+  Pixels with improvement: 520,983
+  Preventable cases: 916,141
+  Cost savings: $10,077,551k
+Tree cover 10.0%:
+  NDVI target: 0.451
+  Pixels with improvement: 575,073
+  Preventable cases: 2,336,871
+  Cost savings: $25,705,582k
+  Generating NDVI deviation plot...
+  Results: 487,989 cases prevented, $5,367,882,781 saved
+
+Processing Los_Angeles
+Current tree cover: 8.68%
+Target tree cover: 13.68%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 254.0
+Sample values: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+Tree cover results:
+  Range: 0.0% - 32.8%
+  Mean: 4.3%
+  >50%: 0, >70%: 0
+  Sample values: [5.508353221957041, 9.504187604690117, 4.774814814814815, 4.544256120527307, 4.34689349112426]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Los_Angeles\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Los_Angeles\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.507, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=356,756, Decreased=66,785
+Health impact: 69,818 pixels, 3,022,811 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.123
+  Pixels with improvement: 281,861
+  Preventable cases: 97,764
+  Cost savings: $1,075,399k
+Tree cover 5.0%:
+  NDVI target: 0.249
+  Pixels with improvement: 332,574
+  Preventable cases: 1,753,662
+  Cost savings: $19,290,283k
+Tree cover 10.0%:
+  NDVI target: 0.293
+  Pixels with improvement: 354,260
+  Preventable cases: 2,830,676
+  Cost savings: $31,137,438k
+  Generating NDVI deviation plot...
+  Results: 3,022,812 cases prevented, $33,250,932,000 saved
+
+Processing Miami
+Current tree cover: 7.19%
+Target tree cover: 12.19%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 97.0
+Sample values: [ 0.  3.  4.  5.  6.  7.  8.  9. 10. 11.]
+Tree cover results:
+  Range: 0.0% - 20.4%
+  Mean: 5.2%
+  >50%: 0, >70%: 0
+  Sample values: [19.072516758074347, 12.638018200202225, 10.918248175182482, 5.241379310344827, 6.488559892328398]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Miami\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Miami\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.640, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=30,540, Decreased=10,085
+Health impact: 0 pixels, 0 total cases
+  Error processing Miami: vmin, vcenter, and vmax must be in ascending order
+
+Processing Minneapolis
+Current tree cover: 15.69%
+Target tree cover: 20.69%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 96.0
+Sample values: [ 0.  4.  5.  6.  7.  8.  9. 10. 11. 12.]
+Tree cover results:
+  Range: 0.6% - 34.0%
+  Mean: 14.4%
+  >50%: 0, >70%: 0
+  Sample values: [21.088344469190794, 27.82409761057448, 26.676529926025555, 17.626984126984127, 20.59447852760736]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Minneapolis\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Minneapolis\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.526, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=11,961, Decreased=16,226
+Health impact: 1,963 pixels, 70,516 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.121
+  Pixels with improvement: 8,605
+  Preventable cases: 1,313
+  Cost savings: $14,444k
+Tree cover 5.0%:
+  NDVI target: 0.295
+  Pixels with improvement: 12,559
+  Preventable cases: 66,118
+  Cost savings: $727,297k
+Tree cover 10.0%:
+  NDVI target: 0.412
+  Pixels with improvement: 15,760
+  Preventable cases: 207,995
+  Cost savings: $2,287,940k
+  Generating NDVI deviation plot...
+  Results: 70,516 cases prevented, $775,679,867 saved
+
+Processing New_York
+Current tree cover: 11.79%
+Target tree cover: 16.79%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 99.0
+Sample values: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+Tree cover results:
+  Range: 0.0% - 69.2%
+  Mean: 6.0%
+  >50%: 11, >70%: 0
+  Sample values: [39.085815244825845, 35.7524795170332, 18.44103392568659, 39.84016973125884, 30.37435367114788]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\New_York\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\New_York\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.557, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=266,975, Decreased=58,077
+Health impact: 49,136 pixels, 8,675,256 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.124
+  Pixels with improvement: 234,883
+  Preventable cases: 407,964
+  Cost savings: $4,487,604k
+Tree cover 5.0%:
+  NDVI target: 0.245
+  Pixels with improvement: 270,324
+  Preventable cases: 5,179,730
+  Cost savings: $56,977,027k
+Tree cover 10.0%:
+  NDVI target: 0.312
+  Pixels with improvement: 286,026
+  Preventable cases: 9,537,144
+  Cost savings: $104,908,587k
+  Generating NDVI deviation plot...
+  Results: 8,675,256 cases prevented, $95,427,816,000 saved
+
+Processing Philadelphia
+Current tree cover: 16.53%
+Target tree cover: 21.53%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 254.0
+Sample values: [ 0.  2.  3.  4.  5.  6.  7.  8.  9. 10.]
+Tree cover results:
+  Range: 0.0% - 79.4%
+  Mean: 10.3%
+  >50%: 9, >70%: 2
+  Sample values: [5.11782755446456, 11.86561988877985, 6.908629441624366, 2.315696649029982, 11.366247755834829]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Philadelphia\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Philadelphia\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.579, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=91,852, Decreased=31,200
+Health impact: 14,966 pixels, 1,338,641 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.122
+  Pixels with improvement: 76,515
+  Preventable cases: 52,955
+  Cost savings: $582,510k
+Tree cover 5.0%:
+  NDVI target: 0.253
+  Pixels with improvement: 90,229
+  Preventable cases: 830,158
+  Cost savings: $9,131,739k
+Tree cover 10.0%:
+  NDVI target: 0.325
+  Pixels with improvement: 97,049
+  Preventable cases: 1,649,190
+  Cost savings: $18,141,085k
+  Generating NDVI deviation plot...
+  Results: 1,338,641 cases prevented, $14,725,049,625 saved
+
+Processing Phoenix
+Current tree cover: 0.78%
+Target tree cover: 5.78%
+  Running NDVI and tree cover analysis...
+  Error processing Phoenix: Deleting C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Phoenix\treecover_Phoenix_prj.tif failed: Permission denied
+
+Processing San_Antonio
+Current tree cover: 12.99%
+Target tree cover: 17.99%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 95.0
+Sample values: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+Tree cover results:
+  Range: 1.2% - 55.4%
+  Mean: 11.2%
+  >50%: 1, >70%: 0
+  Sample values: [11.85579644879053, 13.019237096243542, 8.945849367784497, 3.258572159672467, 4.234241048915784]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\San_Antonio\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\San_Antonio\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.593, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=307,548, Decreased=249,181
+Health impact: 14,114 pixels, 190,208 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.334
+  Pixels with improvement: 319,134
+  Preventable cases: 295,557
+  Cost savings: $3,251,129k
+Tree cover 5.0%:
+  NDVI target: 0.410
+  Pixels with improvement: 356,292
+  Preventable cases: 729,712
+  Cost savings: $8,026,837k
+Tree cover 10.0%:
+  NDVI target: 0.432
+  Pixels with improvement: 371,883
+  Preventable cases: 942,107
+  Cost savings: $10,363,178k
+  Generating NDVI deviation plot...
+  Results: 190,208 cases prevented, $2,092,283,703 saved
+
+Processing San_Diego
+Current tree cover: 7.43%
+Target tree cover: 12.43%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 254.0
+Sample values: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+Tree cover results:
+  Range: 0.1% - 21.7%
+  Mean: 6.4%
+  >50%: 0, >70%: 0
+  Sample values: [4.089729245916312, 1.2104743083003953, 1.9685264663805437, 2.366966966966967, 2.3358208955223883]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\San_Diego\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\San_Diego\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.553, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=322,037, Decreased=71,564
+Health impact: 31,665 pixels, 838,134 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.142
+  Pixels with improvement: 273,619
+  Preventable cases: 34,863
+  Cost savings: $383,495k
+Tree cover 5.0%:
+  NDVI target: 0.243
+  Pixels with improvement: 300,572
+  Preventable cases: 392,079
+  Cost savings: $4,312,868k
+Tree cover 10.0%:
+  NDVI target: 0.312
+  Pixels with improvement: 331,553
+  Preventable cases: 952,744
+  Cost savings: $10,480,187k
+  Generating NDVI deviation plot...
+  Results: 838,134 cases prevented, $9,219,473,312 saved
+
+Processing San_Francisco
+Current tree cover: 6.83%
+Target tree cover: 11.83%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 82.0
+Sample values: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+Tree cover results:
+  Range: 0.0% - 31.3%
+  Mean: 3.2%
+  >50%: 0, >70%: 0
+  Sample values: [0.4977578475336323, 3.6940874035989717, 4.537724550898203, 1.849056603773585, 22.44417622208811]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\San_Francisco\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\San_Francisco\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.565, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=156,699, Decreased=6,082
+Health impact: 13,173 pixels, 1,173,969 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.067
+  Pixels with improvement: 142,696
+  Preventable cases: 10,520
+  Cost savings: $115,715k
+Tree cover 5.0%:
+  NDVI target: 0.219
+  Pixels with improvement: 153,466
+  Preventable cases: 561,558
+  Cost savings: $6,177,134k
+Tree cover 10.0%:
+  NDVI target: 0.276
+  Pixels with improvement: 156,372
+  Preventable cases: 984,918
+  Cost savings: $10,834,099k
+  Generating NDVI deviation plot...
+  Results: 1,173,969 cases prevented, $12,913,657,625 saved
+
+Processing Seattle
+Current tree cover: 20.38%
+Target tree cover: 25.38%
+  Running NDVI and tree cover analysis...
+=== Tree Cover Debug ===
+dtype: uint8, nodata: 255.0, scale: 1.0, offset: 0.0
+Raster min/max (masked): 0.0 / 88.0
+Sample values: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+Tree cover results:
+  Range: 0.7% - 48.2%
+  Mean: 19.4%
+  >50%: 0, >70%: 0
+  Sample values: [29.618133333333333, 13.705833678113363, 13.507769423558898, 14.989705882352942, 15.03494837172359]
+Looking for NDVI CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Seattle\population_weighted_ndvi_by_adm2.csv
+Looking for Land Cover CSV at: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Seattle\landcover_percentages_adm2.csv
+  Running health impact analysis...
+NDVI deltas - All: [-0.600, 0.300], Positive: [0.000, 0.300]
+Pixels: Improved=46,360, Decreased=27,432
+Health impact: 3,370 pixels, 137,816 total cases
+=== Cost Curve Calculation ===
+Tree cover range: 0.0% - 105.0%
+Risk ratio: 0.9407366240590109
+Cost per case: $11000
+Tree cover 0.0%:
+  NDVI target: 0.134
+  Pixels with improvement: 39,527
+  Preventable cases: 3,604
+  Cost savings: $39,649k
+Tree cover 5.0%:
+  NDVI target: 0.230
+  Pixels with improvement: 44,357
+  Preventable cases: 51,459
+  Cost savings: $566,054k
+Tree cover 10.0%:
+  NDVI target: 0.325
+  Pixels with improvement: 47,966
+  Preventable cases: 180,104
+  Cost savings: $1,981,142k
+  Generating NDVI deviation plot...
+  Results: 137,816 cases prevented, $1,515,977,891 saved
+
+============================================================
+PROCESSING SUMMARY
+============================================================
+Total cities analyzed: 15
+Successfully processed: 13
+Failed: 2
+
+Failed cities: Miami, Phoenix
+
+Overall Results:
+Average current tree cover: 12.39%
+Average target tree cover: 17.39%
+Total cases prevented: 17,930,092
+Total money saved: $197,231,017,070
+
+Detailed results saved to: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\processing_results.csv
+
+Processing completed at: 2025-08-28 11:39:25
+Log file: C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\batch_processing_log_20250828_113721.txt

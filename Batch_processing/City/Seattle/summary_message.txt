@@ -1,0 +1,6 @@
+City: Seattle
+Current tree cover: 20.38%
+Target tree cover: 30.38% (+10.0%)
+Cases prevented: 137,816
+Money saved: $1,515,977,891
+Cost per case: $11,000

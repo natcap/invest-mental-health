@@ -1,0 +1,6 @@
+City: San_Antonio
+Current tree cover: 12.99%
+Target tree cover: 22.99% (+10.0%)
+Cases prevented: 190,208
+Money saved: $2,092,283,703
+Cost per case: $11,000

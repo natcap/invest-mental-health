@@ -1,0 +1,6 @@
+City: San_Diego
+Current tree cover: 7.43%
+Target tree cover: 17.43% (+10.0%)
+Cases prevented: 838,134
+Money saved: $9,219,473,312
+Cost per case: $11,000

@@ -1,0 +1,6 @@
+City: Denver
+Current tree cover: 6.37%
+Target tree cover: 16.37% (+10.0%)
+Cases prevented: 260,160
+Money saved: $2,861,762,234
+Cost per case: $11,000

@@ -1,0 +1,6 @@
+City: Boston
+Current tree cover: 19.13%
+Target tree cover: 29.13% (+10.0%)
+Cases prevented: 243,581
+Money saved: $2,679,394,609
+Cost per case: $11,000

@@ -1,0 +1,6 @@
+City: Los_Angeles
+Current tree cover: 8.68%
+Target tree cover: 18.68% (+10.0%)
+Cases prevented: 3,022,812
+Money saved: $33,250,932,000
+Cost per case: $11,000

@@ -1,0 +1,6 @@
+City: Detroit
+Current tree cover: 10.65%
+Target tree cover: 20.65% (+10.0%)
+Cases prevented: 81,221
+Money saved: $893,431,172
+Cost per case: $11,000

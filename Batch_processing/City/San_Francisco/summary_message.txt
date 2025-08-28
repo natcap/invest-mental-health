@@ -1,0 +1,6 @@
+City: San_Francisco
+Current tree cover: 6.83%
+Target tree cover: 16.83% (+10.0%)
+Cases prevented: 1,173,969
+Money saved: $12,913,657,625
+Cost per case: $11,000

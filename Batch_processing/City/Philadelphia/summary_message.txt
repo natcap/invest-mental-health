@@ -1,0 +1,6 @@
+City: Philadelphia
+Current tree cover: 16.53%
+Target tree cover: 26.53% (+10.0%)
+Cases prevented: 1,338,641
+Money saved: $14,725,049,625
+Cost per case: $11,000
