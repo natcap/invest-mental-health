@@ -13,7 +13,9 @@
 At startup, a flowchart screen appears with three options:
 
 Option 1 → NDVI + Tree Cover + PD analysis
+
 Option 2 → LULC-driven NDVI scenario (simplified)
+
 Option 3 → LULC + NDVI integrated scenario (enhanced)
 
 ## 3. Code Structure
@@ -28,17 +30,25 @@ Option 1:
 GUI: GUI.py Function:Treecover_approach.py
 
 Load AOI, NDVI, Tree Cover, Population, Risk rasters + effect table
+
 Fit LOWESS (Tree cover % → NDVI)
+
 User selects tree cover target → converted into NE_goal NDVI
+
 Run PD analysis → PD_i map, cost maps, summary
 
 Option 2: 
+
 GUI: Run_option2.py Function:lulc_ndvi_analysis.py
 
 Generate NDVI maps from NLCD codes using the attribute table
+
 Apply mask from lc_exclude to filter invalid classes
+
 Compute ΔNDVI (2021–2011), apply common mask
+
 Align to population raster grid
+
 Run PD + cost analysis
 
 Option 3: 
