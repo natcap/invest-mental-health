@@ -1,17 +1,17 @@
-# How to Run This Project
+How to Run This Project
+1. Environment Setup
 
-## 1. Environment Setup
-- Requires Python >= 3.10
-- Install dependencies:
+Requires Python >= 3.10
 
-    pip install -r requirements.txt
+Install dependencies:
 
-## 2. Run the GUI
+pip install -r requirements.txt
 
-    python Gui.py
+2. Run the GUI
+python Gui.py
+
 
 At startup, a flowchart screen appears with three options:
-
 
 Option 1 → NDVI + Tree Cover + PD analysis
 
@@ -19,18 +19,18 @@ Option 2 → LULC-driven NDVI scenario (simplified)
 
 Option 3 → LULC + NDVI integrated scenario (enhanced)
 
-## 3. Code Structure
-
+3. Code Structure
 Main GUI
 
-Gui.py
+Gui.py → Entry point. Shows flowchart and launches Option 1/2/3
 
-Entry point. Shows flowchart and launches Option 1/2/3
+Option 1
 
-Option 1: 
+GUI: Gui.py
 
-GUI: GUI.py Function:Treecover_approach.py
+Function: Treecover_approach.py
 
+Steps:
 
 Load AOI, NDVI, Tree Cover, Population, Risk rasters + effect table
 
@@ -40,11 +40,13 @@ User selects tree cover target → converted into NE_goal NDVI
 
 Run PD analysis → PD_i map, cost maps, summary
 
+Option 2
 
-Option 2: 
+GUI: Run_option2.py
 
-GUI: Run_option2.py Function:lulc_ndvi_analysis.py
+Function: lulc_ndvi_analysis.py
 
+Steps:
 
 Generate NDVI maps from NLCD codes using the attribute table
 
@@ -56,10 +58,13 @@ Align to population raster grid
 
 Run PD + cost analysis
 
-Option 3: 
+Option 3
 
-GUI: Run_option3.py Function:lulc_ndvi_analysis.py
+GUI: Run_option3.py
 
+Function: lulc_ndvi_analysis.py
+
+Steps:
 
 Derive per-class NDVI values by combining LULC with actual NDVI rasters
 
@@ -71,15 +76,10 @@ Align to population raster grid
 
 Run PD + cost analysis
 
+4. Presets / Cost Table / Outputs
+Presets
 
-## 4. Preset/Cost table read/Output
-
-
-Presets:
-
-
-default_paths_option1 → Example inputs for Option 1
-
+default_paths_option1 → Example inputs for Option 1:
 
 AOI shapefile(s)
 
@@ -95,9 +95,7 @@ Health effect Excel table
 
 Health cost Excel table
 
-
-default_paths_option2 → Example inputs for Option 2
-
+default_paths_option2 → Example inputs for Option 2:
 
 LULC raster (baseline + scenario)
 
@@ -113,9 +111,7 @@ Health effect Excel table
 
 Output folder
 
-
-default_paths_option3 → Example inputs for Option 3
-
+default_paths_option3 → Example inputs for Option 3:
 
 LULC raster (baseline + scenario)
 
@@ -133,16 +129,13 @@ Health effect Excel table
 
 Output folder
 
-
-CostTableSelector widget:
-
+CostTableSelector widget
 
 Browse and select health_cost_table.xlsx
 
 Dropdown for region → loads cost_value
 
-Outputs:
-
+Outputs
 
 NDVI maps (baseline, scenario, ΔNDVI)
 
@@ -154,11 +147,8 @@ PD histograms and cost curves
 
 Summary text: total preventable cases + monetary savings
 
-## 5. Batch Processing
-
-
-Scripts:
-
+5. Batch Processing
+Scripts
 
 cut.py → clip NDVI & population rasters
 
@@ -169,34 +159,20 @@ Treecover_approach.py → main functions
 Batch.py → orchestrates multi-city pipeline
 
 Folder Structure
-
-
 Batch/
-
   ├─ City/
-
   │   ├─ Chicago/
-
   │   │   ├─ aoi.shp
-
   │   │   ├─ ndvi_Chicago.tif
-
   │   │   ├─ treecover_Chicago.tif
-
   │   │   ├─ pop_Chicago.tif
-
   │   │   └─ depress_Chicago.tif
-
   │   └─ OtherCity/...
-
   ├─ health_cost_table.xlsx
-
   └─ health_effect_size_table.xlsx
-
 
 Outputs
 
 City-specific PD maps, ΔNDVI maps, histograms
 
 summary_message.txt
-
