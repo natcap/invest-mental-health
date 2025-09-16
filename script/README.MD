@@ -12,6 +12,7 @@
 
 At startup, a flowchart screen appears with three options:
 
+
 Option 1 → NDVI + Tree Cover + PD analysis
 
 Option 2 → LULC-driven NDVI scenario (simplified)
@@ -27,7 +28,9 @@ Gui.py
 Entry point. Shows flowchart and launches Option 1/2/3
 
 Option 1: 
+
 GUI: GUI.py Function:Treecover_approach.py
+
 
 Load AOI, NDVI, Tree Cover, Population, Risk rasters + effect table
 
@@ -37,9 +40,11 @@ User selects tree cover target → converted into NE_goal NDVI
 
 Run PD analysis → PD_i map, cost maps, summary
 
+
 Option 2: 
 
 GUI: Run_option2.py Function:lulc_ndvi_analysis.py
+
 
 Generate NDVI maps from NLCD codes using the attribute table
 
@@ -52,6 +57,7 @@ Align to population raster grid
 Run PD + cost analysis
 
 Option 3: 
+
 GUI: Run_option3.py Function:lulc_ndvi_analysis.py
 
 
@@ -65,12 +71,15 @@ Align to population raster grid
 
 Run PD + cost analysis
 
+
 ## 4. Preset/Cost table read/Output
+
 
 Presets:
 
 
 default_paths_option1 → Example inputs for Option 1
+
 
 AOI shapefile(s)
 
@@ -89,6 +98,7 @@ Health cost Excel table
 
 default_paths_option2 → Example inputs for Option 2
 
+
 LULC raster (baseline + scenario)
 
 LULC attribute table (Excel)
@@ -105,6 +115,7 @@ Output folder
 
 
 default_paths_option3 → Example inputs for Option 3
+
 
 LULC raster (baseline + scenario)
 
@@ -125,11 +136,13 @@ Output folder
 
 CostTableSelector widget:
 
+
 Browse and select health_cost_table.xlsx
 
 Dropdown for region → loads cost_value
 
 Outputs:
+
 
 NDVI maps (baseline, scenario, ΔNDVI)
 
@@ -143,7 +156,9 @@ Summary text: total preventable cases + monetary savings
 
 ## 5. Batch Processing
 
+
 Scripts:
+
 
 cut.py → clip NDVI & population rasters
 
@@ -154,6 +169,7 @@ Treecover_approach.py → main functions
 Batch.py → orchestrates multi-city pipeline
 
 Folder Structure
+
 
 Batch/
 
