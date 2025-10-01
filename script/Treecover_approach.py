@@ -95,6 +95,10 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     ax.set_ylabel("")
     ndvi_fig.tight_layout()
 
+    ndvi_fig.savefig(os.path.join(output_dir, "ndvi_map.png"), dpi=300, bbox_inches='tight')
+    print(f"  Saved: ndvi_map.png")
+
+
     # Step 6: Tree cover zonal stats (reload shapefile to match GEOID )
     raster_reproject_path = tree_path.replace(".tif", "_prj.tif")
     raster_clipped_path = raster_reproject_path.replace(".tif", "_clipped.tif")
@@ -126,6 +130,9 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     ax.set_ylabel("")
     tree_fig.tight_layout()
 
+    tree_fig.savefig(os.path.join(output_dir, "tree_cover_map.png"), dpi=300, bbox_inches='tight')
+    print(f"  Saved: tree_cover_map.png")
+
     # 6. Merge CSV and LOWESS
     ndvi_csv_path = os.path.join(output_dir, "population_weighted_ndvi_by_adm2.csv")
     landcover_csv_path = os.path.join(output_dir, "landcover_percentages_adm2.csv")
@@ -153,18 +160,21 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     ax.plot(x, y, 'o', alpha=0.4, label='Original Data', color='skyblue')
     ax.plot(x_lowess, y_lowess, 'r-', linewidth=2, label='Extended LOWESS (0-100%)')
 
-    # 标记原始数据范围
+
     ax.axvline(min(x), color='gray', linestyle=':', alpha=0.7, label='Data Range')
     ax.axvline(max(x), color='gray', linestyle=':', alpha=0.7)
 
     ax.set_xlabel("Tree Cover (%)")
     ax.set_ylabel("NDVI")
     ax.set_title("Select Tree Cover to Set NE_goal (NDVI) - Extended Range")
-    ax.set_xlim(0, 100)  # 显示完整0-100%范围
+    ax.set_xlim(0, 100)
     ax.grid(True)
     ax.legend()
 
     slider_fig.tight_layout()
+
+    slider_fig.savefig(os.path.join(output_dir, "ndvi_tree_relationship.png"), dpi=300, bbox_inches='tight')
+    print(f"  Saved: ndvi_tree_relationship.png")
 
     NE_goal = 0.3  # placeholder
     return NE_goal, ndvi_fig, tree_fig, slider_fig, x_lowess, y_lowess, aoi_adm2_clipped, ndvi_resampled_path
@@ -203,10 +213,25 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
         with rasterio.open(risk_resampled_path, 'w', **pop_src.meta) as dst:
             dst.write(risk_resampled)
 
-    # Read risk raster and replace invalid values (<0) with 0.15
+    # Read risk raster and convert to 0-1 range if needed, then handle invalid values
     with rasterio.open(risk_resampled_path) as risk_src:
         baseline_risk_raster = risk_src.read(1)
-        baseline_risk_raster = np.where(baseline_risk_raster < 0, 0.15, baseline_risk_raster)
+
+        # Auto-detect data range and convert if necessary
+        max_val = np.nanmax(baseline_risk_raster[baseline_risk_raster > 0])  # Exclude negative values and nodata
+
+        if max_val > 1.5:  # If max > 1.5, data is in 0-100 range
+            print(f"  Risk data range detected: 0-100 (max={max_val:.1f}), converting to 0-1")
+            baseline_risk_raster = baseline_risk_raster / 100.0
+        else:
+            print(f"  Risk data range detected: 0-1 (max={max_val:.3f}), no conversion needed")
+
+        # Replace invalid values (< 0 or > 1) with default 0.15
+        baseline_risk_raster = np.where(
+            (baseline_risk_raster < 0) | (baseline_risk_raster > 1),
+            0.15,
+            baseline_risk_raster
+        )
 
     # Load health effect parameters using scalar baseline risk
     result = load_health_effects(
@@ -244,6 +269,11 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
     # Plot continuous PD_i map with colorbar
     fig1 = plot_pd_map_v1(PD_raster_path, aoi_adm2_clipped, return_fig=True)
 
+    if fig1 is not None:
+        fig1.savefig(os.path.join(output_dir, "pd_map_v1.png"), dpi=300, bbox_inches='tight')
+        print(f"  Saved: pd_map_v1.png")
+
+
     # Get external boundary of adm1
     aoi_adm1_outline = gpd.GeoDataFrame(geometry=[aoi_adm1.unary_union], crs=aoi_adm1.crs)
 
@@ -255,6 +285,11 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
         figures_dir=output_dir,
         return_fig=True
     )
+
+    if fig2 is not None:
+        fig2.savefig(os.path.join(output_dir, "PD_by_pixel.png"), dpi=300, bbox_inches='tight')
+        print(f"  Saved: PD_by_pixel.png")
+
 
     # Clean PD_i: replace negative values with NaN
     with rasterio.open(PD_raster_path) as src:
@@ -288,6 +323,9 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
 
     fig_hist, ax = plt.subplots(figsize=(6.3, 4.5), constrained_layout=True)
     ax.set_aspect('equal')
+
+    fig_hist.savefig(os.path.join(output_dir, "PD_histogram.png"), dpi=300, bbox_inches='tight')
+    print(f"  Saved: PD_histogram.png")
 
     aoi_adm2_clipped.plot(
         column="PD_i_sum_cost",

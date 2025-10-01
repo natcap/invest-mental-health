@@ -2,35 +2,35 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import pandas as pd
 
-# default_paths_option1 = [
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_06_tract_500k.shp",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\population\usa_ppp_2020_UNadj_constrained_SF_proj_setnull.tif",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\ndvi\ndvi_s2_075_2019_10m_v2.tif",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\risk\baseline_incidence_rate_06075.shp",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
-#             r"C:\Users\74007\Downloads\Stanford University\output_result"
-#         ]
-
 default_paths_option1 = [
-    # AOI County Shapefile (aoi_adm1_path)
-    r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\aoi_Boston.shp",
-    # AOI Tract Shapefile (aoi_adm2_path)
-    r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\aoi_Boston.shp",
-    # Population Raster (pop_path)
-    r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\ppp_Boston.tif",
-    # NDVI Raster (ndvi_path)
-    r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\NDVI_median_landsat_30m_2021_Boston.tif",
-    # Tree Cover Raster (tree_path)
-    r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\treecover_Boston.tif",
-    # Risk Raster (risk_path) - important tif file
-    r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\depress_Boston.tif",
-    # Health Effect Excel Table (effect_excel)
-    r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
-    # Output Folder (output_dir)
-    r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston"
-]
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_06_tract_500k.shp",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\population\usa_ppp_2020_UNadj_constrained_SF_proj_setnull.tif",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\ndvi\ndvi_s2_075_2019_10m_v2.tif",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\risk\baseline_incidence_rate_06075.shp",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
+            r"C:\Users\74007\Downloads\Stanford University\output_result"
+        ]
+
+# default_paths_option1 = [
+#     # AOI County Shapefile (aoi_adm1_path)
+#     r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\aoi_Boston.shp",
+#     # AOI Tract Shapefile (aoi_adm2_path)
+#     r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\aoi_Boston.shp",
+#     # Population Raster (pop_path)
+#     r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\ppp_Boston.tif",
+#     # NDVI Raster (ndvi_path)
+#     r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\NDVI_median_landsat_30m_2021_Boston.tif",
+#     # Tree Cover Raster (tree_path)
+#     r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\treecover_Boston.tif",
+#     # Risk Raster (risk_path) - important tif file
+#     r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston\depress_Boston.tif",
+#     # Health Effect Excel Table (effect_excel)
+#     r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
+#     # Output Folder (output_dir)
+#     r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston"
+# ]
 
 # default_paths_option1 = [
 #             r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\Chicago_Boundary\Chicago_aoi_boundary.shp",
