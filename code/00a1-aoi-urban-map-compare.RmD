@@ -8,6 +8,14 @@ editor_options:
 ---
 
 
+```
+  This script aims to plot out the city maps (with 5 example cities) from three different data sources for intuiitive comparasion. 
+  
+  This aids us to discuss and determine which data source to use. 
+
+```
+
+
 ## R setup
 
 ```{r include=FALSE}
@@ -37,10 +45,12 @@ dir.shp <- 'D:/data/shp/US_census_Cartographic_Boundary_Shapefiles/UAC/'
 dir.met <- paste0(dir.shp, 'cb_2024_us_cbsa_500k/cb_2024_us_cbsa_500k.shp')
 dir.ua  <- paste0(dir.shp, 'cb_2020_us_ua20_500k/cb_2020_us_ua20_500k.shp')
 dir.place <- paste0(dir.shp, 'cb_2020_us_place_500k/cb_2020_us_place_500k.shp')
+dir.aois  <- "./data/aoi/places_in_or_touching_metros_487.shp"
 
 dat.met <- st_read(dir.met) 
 dat.ua <- st_read(dir.ua)  
 dat.place <- st_read(dir.place)
+dat.aois <- st_read(dir.aois)
 ```
 
 
@@ -120,16 +130,16 @@ for (city.i in cities) {
   # Plot the layers
   map <- 
     tm_shape(met.i) +
-    tm_borders(col = "black", lwd = 2.5, alpha = 0.6) +
+    tm_borders(col = "black", lwd = 2.5, fill_alpha = 0.6) +
     tm_shape(ua.i) +
-    tm_borders(col = "blue", lwd = 1.5, alpha = 0.6) +
+    tm_borders(col = "blue", lwd = 1.5, fill_alpha = 0.6) +
     tm_shape(place.i) +
-    tm_borders(col = "red", lwd = 1, alpha = 1) +
+    tm_borders(col = "red", lwd = 1, fill_alpha = 1) +
     tm_layout(title = city.i, 
               title.position = c("center", "top"),
               frame = FALSE,
               legend.outside = F) +
-    tm_add_legend(type = "line",
+    tm_add_legend(type = "lines",
                 labels = c("Metro", "Urban Area", "Place"),
                 col = c("black", "blue", "red"),
                 lwd = c(2, 1, 0.5),

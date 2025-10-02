@@ -27,6 +27,7 @@ library(viridis)
 ## census 
 
 ```{r}
+
 yr <- 2020
 
 tract_exclude <- c('06075980401', '06075017902', '06075017903') ## exclude islands near San Francisco 
@@ -36,6 +37,7 @@ tract_exclude <- c('06075980401', '06075017902', '06075017903') ## exclude islan
 readRenviron("~/.Renviron")
 api_key <- Sys.getenv("MY_Census_API_KEY") 
 census_api_key(api_key, install = TRUE, overwrite = TRUE)
+
 ```
 
 
