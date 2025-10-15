@@ -1,0 +1,106 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-10-15"
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+  Take a small sample for testing 
+    
+  - Compare different curve-fitting functions.
+  - Explore alternative definitions of % increase in TCC.
+
+```{r - for aoi}
+
+# ---- inputs ----
+#' 
+#' the ids are taken from "D:\natcap\invest-mental-health\data\aoi\aoi_csv"
+#' 
+ids <- c(
+  455000, 644000, 667000, 1245000, 1714000, 2507000, 2622000, 2743000,
+  3651000, 4260000, 4261000, 4865000, 5363000, 1245975, 4824000, 4983470
+)
+
+
+ids <- sprintf("%07d", as.integer(ids)) # make sure the GEOID_PLACE are 7 digits
+
+
+
+src_dir  <- "G:/Shared drives/invest-health/City500/aoi_each_with_tract"
+dst_dir  <- "G:/Shared drives/invest-health/City16/aoi_each_with_tract"
+recursive <- FALSE # set TRUE if you want to search subfolders
+
+# ---- prep ----
+if (!dir.exists(dst_dir)) dir.create(dst_dir, recursive = TRUE)
+
+# List all files (any type)
+files <- list.files(src_dir, full.names = TRUE, recursive = recursive, all.files = FALSE)
+fnames <- basename(files)
+
+# Build safe regex for each ID: match as a whole number token in the name (ignores extension)
+# e.g., "..._42.", ".42_", "-42-", "42." etc., but NOT "...142..." or "420..."
+id_patterns <- paste0("(?<![0-9])", ids, "(?![0-9])")
+
+# Which files match any ID? (case-insensitive)
+matched_idx <- Reduce(`|`, lapply(id_patterns, function(p) grepl(p, fnames, perl = TRUE, ignore.case = TRUE)))
+matches <- files[matched_idx]
+
+# Optional: de-duplicate (if recursive=TRUE different paths may repeat basenames)
+matches <- unique(matches)
+
+# ---- copy ----
+ok <- file.copy(matches, dst_dir, overwrite = FALSE)
+
+# ---- simple report ----
+data.frame(
+  file = basename(matches),
+  copied = ok,
+  from = dirname(matches),
+  to = normalizePath(dst_dir, winslash = "/")
+)
+
+```
+
+
+
+
+```{r - for ndvi}
+
+src_dir  <- "G:/Shared drives/invest-health/City500/ndvi_us500"
+dst_dir  <- "G:/Shared drives/invest-health/City16/ndvi_us500"
+recursive <- FALSE # set TRUE if you want to search subfolders
+
+# ---- prep ----
+if (!dir.exists(dst_dir)) dir.create(dst_dir, recursive = TRUE)
+
+# List all files (any type)
+files <- list.files(src_dir, full.names = TRUE, recursive = recursive, all.files = FALSE)
+fnames <- basename(files)
+
+# Build safe regex for each ID: match as a whole number token in the name (ignores extension)
+# e.g., "..._42.", ".42_", "-42-", "42." etc., but NOT "...142..." or "420..."
+id_patterns <- paste0("(?<![0-9])", ids, "(?![0-9])")
+
+# Which files match any ID? (case-insensitive)
+matched_idx <- Reduce(`|`, lapply(id_patterns, function(p) grepl(p, fnames, perl = TRUE, ignore.case = TRUE)))
+matches <- files[matched_idx]
+
+# Optional: de-duplicate (if recursive=TRUE different paths may repeat basenames)
+matches <- unique(matches)
+
+# ---- copy ----
+ok <- file.copy(matches, dst_dir, overwrite = FALSE)
+
+# ---- simple report ----
+data.frame(
+  file = basename(matches),
+  copied = ok,
+  from = dirname(matches),
+  to = normalizePath(dst_dir, winslash = "/")
+)
+
+```
