@@ -1,0 +1,10 @@
+Flask
+numpy
+pandas
+matplotlib
+geopandas
+rasterio
+rasterstats
+statsmodels
+scipy
+Pillow
