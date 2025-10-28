@@ -75,6 +75,27 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
         with rasterio.open(ndvi_resampled_path, 'w', **pop_src.meta) as dst:
             dst.write(ndvi_resampled)
 
+    # === NDVI value check ===
+    with rasterio.open(ndvi_resampled_path) as src:
+        check_data = src.read(1)
+        valid_check = check_data[np.isfinite(check_data)]
+        if src.nodata is not None:
+            valid_check = valid_check[valid_check != src.nodata]
+
+        if len(valid_check) > 0 and (abs(valid_check.max()) > 10 or abs(valid_check.min()) > 10):
+            print(f"  Converting NDVI from scaled range to standard (-1 to 1)...")
+            check_data = check_data / 100.0
+            meta = src.meta.copy()
+
+
+            converted_path = ndvi_resampled_path.replace('.tif', '_std.tif')
+            with rasterio.open(converted_path, 'w', **meta) as dst:
+                dst.write(check_data, 1)
+
+
+            ndvi_resampled_path = converted_path
+            print(f"  NDVI conversion completed, using: {converted_path}")
+
     # 4. Compute weighted NDVI
     weighted_ndvi_list = [
         calculate_weighted_ndvi(row.geometry, ndvi_resampled_path, pop_dst_clip)
@@ -139,7 +160,7 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     # z = sm.nonparametric.lowess(y, x, frac=0.4)
     # x_lowess = z[:, 0]
     # y_lowess = z[:, 1]
-    x_lowess, y_lowess = create_extended_lowess(x, y, extend_to_range=(0, 100))
+    x_lowess, y_lowess = create_extended_polynomial(x, y , method='sigmoid')
 
     # slider_fig, ax = plt.subplots(figsize=(12, 4))
     # ax.plot(x, y, 'o', alpha=0.4, label='Data', color='skyblue')
@@ -153,14 +174,14 @@ def run_ndvi_tree_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tr
     ax.plot(x, y, 'o', alpha=0.4, label='Original Data', color='skyblue')
     ax.plot(x_lowess, y_lowess, 'r-', linewidth=2, label='Extended LOWESS (0-100%)')
 
-    # 标记原始数据范围
+
     ax.axvline(min(x), color='gray', linestyle=':', alpha=0.7, label='Data Range')
     ax.axvline(max(x), color='gray', linestyle=':', alpha=0.7)
 
     ax.set_xlabel("Tree Cover (%)")
     ax.set_ylabel("NDVI")
     ax.set_title("Select Tree Cover to Set NE_goal (NDVI) - Extended Range")
-    ax.set_xlim(0, 100)  # 显示完整0-100%范围
+    ax.set_xlim(0, 100)
     ax.grid(True)
     ax.legend()
 
@@ -203,10 +224,25 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
         with rasterio.open(risk_resampled_path, 'w', **pop_src.meta) as dst:
             dst.write(risk_resampled)
 
-    # Read risk raster and replace invalid values (<0) with 0.15
+    # Read risk raster and convert to 0-1 range if needed, then handle invalid values
     with rasterio.open(risk_resampled_path) as risk_src:
         baseline_risk_raster = risk_src.read(1)
-        baseline_risk_raster = np.where(baseline_risk_raster < 0, 0.15, baseline_risk_raster)
+
+        # Auto-detect data range and convert if necessary
+        max_val = np.nanmax(baseline_risk_raster[baseline_risk_raster > 0])  # Exclude negative values and nodata
+
+        if max_val > 1.5:  # If max > 1.5, data is in 0-100 range
+            # print(f"  Risk data range detected: 0-100 (max={max_val:.1f}), converting to 0-1")
+            baseline_risk_raster = baseline_risk_raster / 100.0
+        # else:
+        #     print(f"  Risk data range detected: 0-1 (max={max_val:.3f}), no conversion needed")
+
+        # Replace invalid values (< 0 or > 1) with default 0.15
+        baseline_risk_raster = np.where(
+            (baseline_risk_raster < 0) | (baseline_risk_raster > 1),
+            0.15,
+            baseline_risk_raster
+        )
 
     # Load health effect parameters using scalar baseline risk
     result = load_health_effects(
@@ -217,7 +253,16 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
     )
 
     # Read NDVI and population data
-    ndvi_raster_path = ndvi_path.replace(".tif", "_prj_clipped_100m.tif")
+
+    # Converted NDVI
+    ndvi_raster_path = ndvi_path.replace(".tif", "_prj_clipped_100m_std.tif")
+
+    # orignal NDVI file
+    if not os.path.exists(ndvi_raster_path):
+        ndvi_raster_path = ndvi_path.replace(".tif", "_prj_clipped_100m.tif")
+        print(f"  Warning: Using non-converted NDVI file")
+
+
     with rasterio.open(ndvi_raster_path) as ndvi_src:
         NDVI_array = ndvi_src.read(1)
         ndvi_meta = ndvi_src.meta
@@ -325,6 +370,45 @@ def run_pd_analysis(aoi_adm1_path, aoi_adm2_path, pop_path, ndvi_path, tree_path
     per_pixel_cases = PD_masked[0]
     total_pd_cases = np.nansum(per_pixel_cases)
 
+    # print("\n  Calculating preventable cases by tract...")
+
+    # Use zonal_stats to sum PD cases for each tract
+    PD_raster_path = os.path.join(output_dir, "PD_i.tif")
+    zonal_cases = zonal_stats(
+        aoi_adm2_clipped,
+        PD_raster_path,
+        stats="sum",
+        nodata=np.nan
+    )
+
+    # Extract sum values and create DataFrame
+    tract_cases = []
+    for idx, (geom, stat) in enumerate(zip(aoi_adm2_clipped.geometry, zonal_cases)):
+        cases_sum = stat["sum"] if stat["sum"] is not None else 0.0
+        cases_sum = round(max(0, cases_sum), 2)  # Ensure non-negative
+
+        tract_cases.append({
+            'GEOID': aoi_adm2_clipped.iloc[idx]['GEOID'],
+            'preventable_cases': cases_sum,
+            'preventable_cost_usd': round(cases_sum * cost_value, 2)
+        })
+
+    # Create DataFrame and save to CSV
+    df_tract_cases = pd.DataFrame(tract_cases)
+    tract_csv_path = os.path.join(output_dir, "preventable_cases_by_tract.csv")
+    df_tract_cases.to_csv(tract_csv_path, index=False)
+
+    # print(f"  Saved: preventable_cases_by_tract.csv")
+    # print(f"  Total tracts: {len(df_tract_cases)}")
+    # print(f"  Total cases (tract sum): {df_tract_cases['preventable_cases'].sum():,.2f}")
+    # print(f"  Total cases (raster sum): {total_pd_cases:,.2f}")
+
+    # # Show top 5 tracts
+    # top_tracts = df_tract_cases.nlargest(5, 'preventable_cases')
+    # print(f"\n  Top 5 tracts by preventable cases:")
+    # for idx, row in top_tracts.iterrows():
+    #     print(f"    {row['GEOID']}: {row['preventable_cases']:,.2f} cases")
+
     return fig1, fig2, fig_hist, fig_cost_curve, total_pd_cases
 
 
@@ -351,6 +435,16 @@ def simulate_cost_vs_treecover(x_lowess, y_lowess, Pop_array, baseline_ndvi_rast
 
         # Calculate NDVI improvement
         delta_ndvi = ndvi_goal - baseline_ndvi_raster
+
+        # #
+        # print(f"\n=== Delta Calculation Debug ===")
+        # print(f"ndvi_goal (target NDVI): {ndvi_goal:.4f}")
+        # print(f"Current NDVI - valid pixels: {np.sum(np.isfinite(baseline_ndvi_raster)):,}")
+        # print(f"Current NDVI range: [{np.nanmin(baseline_ndvi_raster):.4f}, {np.nanmax(baseline_ndvi_raster):.4f}]")
+        # print(f"Delta range (before filter): [{np.nanmin(delta_ndvi):.4f}, {np.nanmax(delta_ndvi):.4f}]")
+        # print(f"Pixels where current NDVI is valid: {np.sum(~np.isnan(baseline_ndvi_raster)):,}")
+        # print(f"Pixels where delta > 0: {np.sum(delta_ndvi > 0):,}")
+        # #
 
         # Only positive improvements contribute to health benefits
         delta_positive = np.where(delta_ndvi > 0, delta_ndvi, 0)
@@ -429,12 +523,12 @@ def compute_zonal_statistics(aoi_shapefile, raster_path):
         data = src.read(1, masked=True)  # generate mask
         data = data.astype(float) * scale + offset
 
-        print("=== Tree Cover Debug ===")
-        print(f"dtype: {src.dtypes[0]}, nodata: {nodata_val}, scale: {scale}, offset: {offset}")
-        print(f"Raster min/max (masked): {data.min():.1f} / {data.max():.1f}")
+        # print("=== Tree Cover Debug ===")
+        # print(f"dtype: {src.dtypes[0]}, nodata: {nodata_val}, scale: {scale}, offset: {offset}")
+        # print(f"Raster min/max (masked): {data.min():.1f} / {data.max():.1f}")
 
         unique_vals = np.unique(data.compressed())[:10]
-        print(f"Sample values: {unique_vals}")
+        # print(f"Sample values: {unique_vals}")
 
 
     use_conversion = False
@@ -474,11 +568,11 @@ def compute_zonal_statistics(aoi_shapefile, raster_path):
     df = pd.DataFrame(percent_stats)
     df["GEOID"] = aoi_shapefile["GEOID"].values
 
-    print("Tree cover results:")
-    print(f"  Range: {df['cover_10'].min():.1f}% - {df['cover_10'].max():.1f}%")
-    print(f"  Mean: {df['cover_10'].mean():.1f}%")
-    print(f"  >50%: {(df['cover_10'] > 50).sum()}, >70%: {(df['cover_10'] > 70).sum()}")
-    print(f"  Sample values: {df['cover_10'].head().tolist()}")
+    # print("Tree cover results:")
+    # print(f"  Range: {df['cover_10'].min():.1f}% - {df['cover_10'].max():.1f}%")
+    # print(f"  Mean: {df['cover_10'].mean():.1f}%")
+    # print(f"  >50%: {(df['cover_10'] > 50).sum()}, >70%: {(df['cover_10'] > 70).sum()}")
+    # print(f"  Sample values: {df['cover_10'].head().tolist()}")
 
     return df
 
@@ -996,9 +1090,9 @@ def calculate_pd_layer(ndvi_raster_path: str, pop_raster_path: str, rr: float,
     delta_NE_i = NE_goal - ndvi_data
     delta_positive = np.where(delta_NE_i > 0, delta_NE_i, 0)  # Zero out NDVI decreases
 
-    print(f"NDVI deltas - All: [{np.nanmin(delta_NE_i):.3f}, {np.nanmax(delta_NE_i):.3f}], "
-          f"Positive: [{np.nanmin(delta_positive):.3f}, {np.nanmax(delta_positive):.3f}]")
-    print(f"Pixels: Improved={np.sum(delta_positive > 0):,}, Decreased={np.sum(delta_NE_i < 0):,}")
+    # print(f"NDVI deltas - All: [{np.nanmin(delta_NE_i):.3f}, {np.nanmax(delta_NE_i):.3f}], "
+    #       f"Positive: [{np.nanmin(delta_positive):.3f}, {np.nanmax(delta_positive):.3f}]")
+    # print(f"Pixels: Improved={np.sum(delta_positive > 0):,}, Decreased={np.sum(delta_NE_i < 0):,}")
 
     # Risk calculation using only positive improvements
     RR_i = np.exp(np.log(rr) * 10 * delta_positive)
@@ -1019,6 +1113,7 @@ def calculate_pd_layer(ndvi_raster_path: str, pop_raster_path: str, rr: float,
 
     # Calculate health impact (force non-negative)
     PD_i = np.maximum(0, PF_i * baseline_risk_rate * pop_data)
+
 
     print(f"Health impact: {np.sum(PD_i > 0):,} pixels, {np.nansum(PD_i):,.0f} total cases")
 
@@ -1184,61 +1279,308 @@ def safe_raster_write(path, meta, data):
         dst.write(data, 1)
 
 
-def create_extended_lowess(x_data, y_data, extend_to_range=(0, 100)):
+def create_sigmoid_fit(x_data, y_data, extend_to_range=(0, 100)):
     """
-    Create LOWESS curve extended to full 0-100% tree cover range
+    Fit a standard logistic (sigmoid) curve to the data.
+    The curve is bounded in [0, 1] by the functional form but is NOT forced
+    to pass through (0,0) or (100,1).
+    """
+    import numpy as np
+    from scipy.optimize import curve_fit
 
-    Parameters:
-    x_data: original tree cover data
-    y_data: original NDVI data
-    extend_to_range: tuple (min, max) for extended range
+    valid_mask = ~(np.isnan(x_data) | np.isnan(y_data))
+    x_clean = x_data[valid_mask]
+    y_clean = y_data[valid_mask]
 
-    Returns:
-    x_extended, y_extended: extended x and y arrays
+    n_points = len(x_clean)
+    print(f"\n=== Sigmoid Fit ({n_points} data points) ===")
+
+    if n_points < 2:
+        print("ERROR: Not enough data points")
+        x_extended = np.linspace(extend_to_range[0], extend_to_range[1], 200)
+        y_extended = np.full_like(x_extended, np.nanmean(y_data))
+        return x_extended, y_extended
+
+    def sigmoid(x, k, x0):
+        """Standard logistic function without endpoint constraints."""
+        return 1.0 / (1.0 + np.exp(-k * (x - x0)))
+
+    try:
+        # Keep a conservative initial guess; loosen bounds a bit
+        p0 = [0.1, 50.0]
+        popt, _ = curve_fit(sigmoid, x_clean, y_clean,
+                            p0=p0, bounds=([1e-3, -1e6], [10.0, 1e6]))
+        k_fit, x0_fit = popt
+
+        x_extended = np.linspace(extend_to_range[0], extend_to_range[1], 200)
+        y_extended = sigmoid(x_extended, k_fit, x0_fit)
+
+        # R-squared
+        y_pred = sigmoid(x_clean, k_fit, x0_fit)
+        ss_res = np.sum((y_clean - y_pred) ** 2)
+        ss_tot = np.sum((y_clean - np.mean(y_clean)) ** 2)
+        r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+
+        print(f"  Sigmoid parameters: steepness={k_fit:.3f}, midpoint={x0_fit:.1f}")
+        print(f"  R-squared: {r_squared:.4f}")
+
+    except Exception as e:
+        print(f"  Fitting failed: {e}, using power function fallback")
+        return create_extended_polynomial_constrained(x_data, y_data, extend_to_range)
+
+    return x_extended, y_extended
+
+
+def create_extended_lowess_smooth(x_data, y_data, extend_to_range=(0, 100)):
+    """
+    LOWESS smoothing with adaptive bandwidth based on data size.
+    Suitable for datasets with many scattered points.
     """
     import numpy as np
     import statsmodels.api as sm
-    from scipy import interpolate
 
-    # Original LOWESS fit
-    lowess_result = sm.nonparametric.lowess(y_data, x_data, frac=0.4)
-    x_lowess = lowess_result[:, 0]
-    y_lowess = lowess_result[:, 1]
+    # Remove NaNs
+    valid_mask = ~(np.isnan(x_data) | np.isnan(y_data))
+    x_clean = x_data[valid_mask]
+    y_clean = y_data[valid_mask]
 
-    # Create extended range
-    min_extend, max_extend = extend_to_range
+    n_points = len(x_clean)
+    print(f"\n=== LOWESS Smooth Fit ({n_points} data points) ===")
 
-    # Handle extrapolation beyond data range
-    x_min_data, x_max_data = min(x_data), max(x_data)
-    y_min_fit, y_max_fit = y_lowess[0], y_lowess[-1]
+    if n_points < 2:
+        print("ERROR: Not enough data points")
+        x_extended = np.linspace(extend_to_range[0], extend_to_range[1], 200)
+        y_extended = np.full_like(x_extended, np.nanmean(y_data))
+        return x_extended, y_extended
 
-    # Estimate slopes at boundaries for linear extrapolation
-    if len(x_lowess) >= 2:
-        # Slope at lower end
-        slope_low = (y_lowess[1] - y_lowess[0]) / (x_lowess[1] - x_lowess[0])
-        # Slope at upper end
-        slope_high = (y_lowess[-1] - y_lowess[-2]) / (x_lowess[-1] - x_lowess[-2])
+    # Adaptive smoothing: more points -> larger frac
+    if n_points > 100:
+        frac = 0.6
+    elif n_points > 50:
+        frac = 0.5
+    elif n_points > 20:
+        frac = 0.4
     else:
-        slope_low = slope_high = 0
+        frac = 0.3
 
-    # Create extended x range
+    print(f"  Using frac={frac} for smoothing")
+
+    # LOWESS fit
+    try:
+        lowess_result = sm.nonparametric.lowess(y_clean, x_clean, frac=frac, it=3)
+        x_lowess = lowess_result[:, 0]
+        y_lowess = lowess_result[:, 1]
+    except Exception as e:
+        print(f"  LOWESS failed: {e}, falling back to linear")
+        coeffs = np.polyfit(x_clean, y_clean, deg=1)
+        x_extended = np.linspace(extend_to_range[0], extend_to_range[1], 200)
+        y_extended = np.polyval(coeffs, x_extended)
+        y_extended = np.clip(y_extended, 0.0, 1.0)
+        return x_extended, y_extended
+
+    # Data range
+    x_min_data, x_max_data = np.min(x_clean), np.max(x_clean)
+
+    # Slopes for extrapolation
+    if len(x_lowess) >= 2:
+        n_edge = min(5, max(1, len(x_lowess) // 10))
+        slope_low = (y_lowess[n_edge] - y_lowess[0]) / (x_lowess[n_edge] - x_lowess[0])
+        slope_high = (y_lowess[-1] - y_lowess[-n_edge - 1]) / (x_lowess[-1] - x_lowess[-n_edge - 1])
+    else:
+        slope_low = slope_high = 0.0
+
+    y_min_fit = y_lowess[0]
+    y_max_fit = y_lowess[-1]
+
+    print(f"  Data range: {x_min_data:.1f}% - {x_max_data:.1f}%")
+    print(f"  NDVI range: {y_min_fit:.3f} - {y_max_fit:.3f}")
+
+    # Extended range
+    min_extend, max_extend = extend_to_range
     x_extended = np.linspace(min_extend, max_extend, 200)
-
-    # Interpolate/extrapolate y values
     y_extended = np.zeros_like(x_extended)
 
     for i, x_val in enumerate(x_extended):
         if x_val < x_min_data:
-            # Linear extrapolation below data range
             y_extended[i] = y_min_fit + slope_low * (x_val - x_min_data)
         elif x_val > x_max_data:
-            # Linear extrapolation above data range
             y_extended[i] = y_max_fit + slope_high * (x_val - x_max_data)
         else:
-            # Interpolation within data range
             y_extended[i] = np.interp(x_val, x_lowess, y_lowess)
 
-    # Ensure NDVI values stay within reasonable bounds (0 to 1)
+    # Enforce monotonic non-decreasing
+    for i in range(1, len(y_extended)):
+        if y_extended[i] < y_extended[i - 1]:
+            y_extended[i] = y_extended[i - 1]
+
+    # Clip to valid range
     y_extended = np.clip(y_extended, 0.0, 1.0)
 
+    # R-squared based on in-range interpolation
+    y_pred = np.interp(x_clean, x_lowess, y_lowess)
+    ss_res = np.sum((y_clean - y_pred) ** 2)
+    ss_tot = np.sum((y_clean - np.mean(y_clean)) ** 2)
+    r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+    print(f"  R-squared: {r_squared:.4f}")
+
     return x_extended, y_extended
+
+
+def create_extended_polynomial_monotonic(x_data, y_data, extend_to_range=(0, 100), degree=2):
+    """
+    Polynomial fit with a post-hoc monotonic (non-decreasing) adjustment.
+    """
+    import numpy as np
+
+    valid_mask = ~(np.isnan(x_data) | np.isnan(y_data))
+    x_clean = x_data[valid_mask]
+    y_clean = y_data[valid_mask]
+
+    n_points = len(x_clean)
+
+    # Auto-select degree for small samples
+    if n_points < 20:
+        actual_degree = 1
+        print(f"\n=== Monotonic Linear Fit ({n_points} data points) ===")
+    else:
+        actual_degree = degree
+        print(f"\n=== Monotonic Polynomial degree={actual_degree} ({n_points} data points) ===")
+
+    if n_points < 2:
+        print("ERROR: Not enough data points")
+        x_extended = np.linspace(extend_to_range[0], extend_to_range[1], 200)
+        y_extended = np.full_like(x_extended, np.nanmean(y_data))
+        return x_extended, y_extended
+
+    # Polynomial fit
+    coefficients = np.polyfit(x_clean, y_clean, deg=actual_degree)
+    poly_function = np.poly1d(coefficients)
+
+    # Extended range
+    min_extend, max_extend = extend_to_range
+    x_extended = np.linspace(min_extend, max_extend, 200)
+    y_extended = poly_function(x_extended)
+
+    # Enforce monotonic non-decreasing by flattening decreases
+    for i in range(1, len(y_extended)):
+        if y_extended[i] < y_extended[i - 1]:
+            y_extended[i] = y_extended[i - 1]
+
+    # Clip to [0, 1]
+    y_extended = np.clip(y_extended, 0.0, 1.0)
+
+    # R-squared
+    y_pred = poly_function(x_clean)
+    ss_res = np.sum((y_clean - y_pred) ** 2)
+    ss_tot = np.sum((y_clean - np.mean(y_clean)) ** 2)
+    r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+
+    if actual_degree == 1:
+        print(f"  Linear: y = {coefficients[0]:.6f}*x + {coefficients[1]:.6f}")
+    else:
+        print(f"  Equation: {poly_function}")
+    print(f"  R-squared: {r_squared:.4f}")
+
+    return x_extended, y_extended
+
+
+def create_extended_polynomial_constrained(x_data, y_data, extend_to_range=(0, 100)):
+    """
+    Power-function-style fit WITHOUT enforcing endpoints:
+        y = a + b * (x / 100)^k
+    This generalization allows vertical shift (a) and scaling (b), thus it does
+    NOT pass through (0,0) or (100,1) unless the data imply it.
+    """
+    import numpy as np
+    from scipy.optimize import curve_fit
+
+    valid_mask = ~(np.isnan(x_data) | np.isnan(y_data))
+    x_clean = x_data[valid_mask]
+    y_clean = y_data[valid_mask]
+
+    n_points = len(x_clean)
+    print(f"\n=== Power Function Fit (unconstrained) ({n_points} data points) ===")
+
+    if n_points < 2:
+        print("ERROR: Not enough data points")
+        x_extended = np.linspace(extend_to_range[0], extend_to_range[1], 200)
+        y_extended = np.full_like(x_extended, np.nanmean(y_data))
+        return x_extended, y_extended
+
+    def power_func_shifted(x, a, b, k):
+        # Safe power for non-negative base; assumes x in [0, 100]
+        return a + b * np.power(np.clip(x, 0, None) / 100.0, k)
+
+    try:
+        # Initial guesses: a ~ min(y), b ~ (max-min), k ~ 1
+        y_min, y_max = np.nanmin(y_clean), np.nanmax(y_clean)
+        p0 = [y_min, max(y_max - y_min, 1e-3), 1.0]
+        bounds = ([-np.inf, 0.0, 0.1], [np.inf, np.inf, 5.0])
+
+        popt, _ = curve_fit(power_func_shifted, x_clean, y_clean, p0=p0, bounds=bounds, maxfev=20000)
+        a_fit, b_fit, k_fit = popt
+
+        x_extended = np.linspace(extend_to_range[0], extend_to_range[1], 200)
+        y_extended = power_func_shifted(x_extended, a_fit, b_fit, k_fit)
+
+        # R-squared
+        y_pred = power_func_shifted(x_clean, a_fit, b_fit, k_fit)
+        ss_res = np.sum((y_clean - y_pred) ** 2)
+        ss_tot = np.sum((y_clean - np.mean(y_clean)) ** 2)
+        r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+
+        print(f"  Function: y = {a_fit:.3f} + {b_fit:.3f} * (x/100)^{k_fit:.3f}")
+        print(f"  R-squared: {r_squared:.4f}")
+
+    except Exception as e:
+        print(f"  Fitting failed: {e}, using linear fallback")
+        x_extended = np.linspace(extend_to_range[0], extend_to_range[1], 200)
+        y_extended = np.full_like(x_extended, np.nanmean(y_data))
+
+    return x_extended, y_extended
+
+
+def create_extended_polynomial(x_data, y_data, extend_to_range=(0, 100), degree=2,
+                               monotonic=True, constrained=False, method='auto'):
+    """
+    Main dispatcher: creates a fitted curve and extends it to the full range [min, max].
+    Supported methods:
+        - 'auto'      : choose by data size
+        - 'lowess'    : LOWESS smoothing
+        - 'polynomial': polynomial with optional monotonic post-processing
+        - 'sigmoid'   : standard logistic fit (no endpoint constraints)
+    If `constrained=True`, use the (now generalized) power-function fit that
+    does NOT force the curve through specific endpoints.
+    """
+    import numpy as np
+
+    # Count valid points
+    valid_mask = ~(np.isnan(x_data) | np.isnan(y_data))
+    n_points = np.sum(valid_mask)
+
+    # Constrained branch (now generalized and unconstrained at endpoints)
+    if constrained:
+        return create_extended_polynomial_constrained(x_data, y_data, extend_to_range)
+
+    # Explicit method selection
+    if method == 'sigmoid':
+        return create_sigmoid_fit(x_data, y_data, extend_to_range)
+
+    # Auto-select method based on data quantity
+    if method == 'auto':
+        if n_points > 50:
+            method = 'lowess'       # Better for many scattered points
+        elif n_points > 20:
+            method = 'sigmoid'      # Often captures saturation patterns
+        else:
+            method = 'polynomial'
+
+    if method == 'lowess':
+        return create_extended_lowess_smooth(x_data, y_data, extend_to_range)
+    elif method == 'sigmoid':
+        return create_sigmoid_fit(x_data, y_data, extend_to_range)
+    else:  # 'polynomial'
+        if monotonic:
+            return create_extended_polynomial_monotonic(x_data, y_data, extend_to_range, degree)
+        else:
+            return create_extended_polynomial_monotonic(x_data, y_data, extend_to_range, degree)

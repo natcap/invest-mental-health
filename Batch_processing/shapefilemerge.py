@@ -2,11 +2,11 @@ import os
 import geopandas as gpd
 from shapely.geometry import Polygon, MultiPolygon
 
-root_folder =  r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City"
+root_folder = r"S:\Shared drives\invest-health\City500\City_Folder_By_Num\City"
 
 for subdir, _, files in os.walk(root_folder):
     for file in files:
-        if file.startswith("aoi_") and file.endswith(".shp") and not file.startswith("aoi_2_"):
+        if file.startswith("city_") and file.endswith(".shp") and not file.startswith("aoi_2_"):
             shp_path = os.path.join(subdir, file)
             try:
                 gdf = gpd.read_file(shp_path)
@@ -14,8 +14,8 @@ for subdir, _, files in os.walk(root_folder):
                     print(f"[Skipped] Empty shapefile: {shp_path}")
                     continue
 
-                # Merge all geometries into one
-                merged_geom = gdf.unary_union
+                # Merge all geometries into one (use union_all() instead of deprecated unary_union)
+                merged_geom = gdf.union_all()
 
                 cleaned_polygons = []
                 if merged_geom.geom_type == "Polygon":
@@ -30,8 +30,10 @@ for subdir, _, files in os.walk(root_folder):
                 # Create new GeoDataFrame with all cleaned polygons
                 new_gdf = gpd.GeoDataFrame(geometry=cleaned_polygons, crs=gdf.crs)
 
-                # Build new file name: aoi_2_cityname.shp
-                new_name = "aoi_2_" + file.split("aoi_")[1]
+                # Build new file name: aoi_2_citycode.shp
+                # Extract the code from city_XXXX.shp -> aoi_2_XXXX.shp
+                city_code = file.replace("city_", "").replace(".shp", "")
+                new_name = f"aoi_2_{city_code}.shp"
                 new_path = os.path.join(subdir, new_name)
 
                 # Save to new file

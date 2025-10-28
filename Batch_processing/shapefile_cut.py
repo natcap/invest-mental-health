@@ -1,9 +1,13 @@
 import os
+import warnings
 import geopandas as gpd
 from shapely.geometry import Polygon, MultiPolygon
 
+# Suppress the GeoSeries.notna warning
+warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
+
 # ==== Input paths ====
-root_folder = r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City"  # City folders
+root_folder = r"S:\Shared drives\invest-health\City500\City_Folder_By_Num\City"  # City folders
 big_shapefile = r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\prevalence_rate_usa_2021.shp"  # large baseline shapefile
 
 # Load the big shapefile once

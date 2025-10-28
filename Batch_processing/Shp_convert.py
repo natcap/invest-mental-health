@@ -6,7 +6,7 @@ from rasterio.transform import from_origin
 import numpy as np
 
 # ===== User configuration =====
-base_dir = r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City"
+base_dir = r"S:\Shared drives\invest-health\City500\City_Folder_By_Num\City"
 usa_shp = r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\prevalence_rate_usa_2021.shp"
 target_field = "DEPRESS"
 cell_size = 100
@@ -21,7 +21,7 @@ for city in os.listdir(base_dir):
     if not os.path.isdir(city_folder):
         continue
 
-    aoi_path = os.path.join(city_folder, f"aoi_{city}.shp")
+    aoi_path = os.path.join(city_folder, f"city_{city}_tract.shp")
     if not os.path.exists(aoi_path):
         print(f"AOI not found for city: {city}")
         continue

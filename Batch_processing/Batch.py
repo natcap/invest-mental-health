@@ -115,14 +115,14 @@ def mean_continuous_raster(raster_path, band=1, extra_nodata_values=None, return
 
 
 # ==== Global settings ====
-base_dir = r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City"
+base_dir = r"S:\Shared drives\invest-health\City16\CITY"
 health_cost_excel = r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_cost_table.xlsx"
 effect_excel = r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx"
 
 # ==== User Configuration ====
-TREE_COVER_INCREASE_PERCENT = 10.0  ############# user input
+TREE_COVER_INCREASE_PERCENT = 5.0  ############# user input
 
-# Setup logging
+# Setup loggin
 logger, log_file = setup_logging(base_dir)
 print(f"Logging to: {log_file}")
 print(f"Processing started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -210,10 +210,10 @@ for _, row in stats_df.iterrows():
     print(f"Target tree cover: {target_treecover:.2f}%")
 
     # Construct file paths
-    aoi_adm1_path = os.path.join(city_folder, f"aoi_{city}.shp")
-    aoi_adm2_path = os.path.join(city_folder, f"aoi_{city}.shp")
+    aoi_adm1_path = os.path.join(city_folder, f"city_{city}_tract.shp")
+    aoi_adm2_path = os.path.join(city_folder, f"city_{city}_tract.shp")
     pop_path = os.path.join(city_folder, f"ppp_{city}.tif")
-    ndvi_path = os.path.join(city_folder, f"NDVI_median_landsat_30m_2021_{city}.tif")
+    ndvi_path = os.path.join(city_folder, f"NDVI_median_landsat_30m_2021_{city}_scaled100.tif")
     tree_path = os.path.join(city_folder, f"treecover_{city}.tif")
     risk_path = os.path.join(city_folder, f"depress_{city}.tif")
     output_dir = city_folder
