@@ -10,7 +10,7 @@
 
 ## General information 
 * [Mental health model design doc](https://docs.google.com/document/d/1B68zhzlO5tY0L8uDSnFGt1CxBpBEjGu6J2_7XAxfV9k/edit?usp=sharing)
-* [Data and log doc](https://docs.google.com/document/d/1h3M5kNG7UyWXREg6LEhTfY2tvIyI1dRjxHbpa8VTEEM/edit?usp=sharing)
+* [Data and log doc (internal use only)](https://docs.google.com/document/d/1h3M5kNG7UyWXREg6LEhTfY2tvIyI1dRjxHbpa8VTEEM/edit?usp=sharing)
 
 ## Directory structure
 ```
@@ -34,7 +34,7 @@ invest-mental-health/
 
 Urban nature exposure can be measured in different ways. Here, we present the three most commonly used nature exposure measurements that relate to mental health outcomes. 
 
-Detailed description can be found in this [Google Slide](https://docs.google.com/presentation/d/189DM6Cf0j2CCCwn8CQ9EbI6i2mIGPo2Xb-0KmNzHA6s/edit?usp=sharing)
+Detailed description can be found in this [Google Slide, (internal use only)](https://docs.google.com/presentation/d/189DM6Cf0j2CCCwn8CQ9EbI6i2mIGPo2Xb-0KmNzHA6s/edit?usp=sharing)
 
 * ***nature availability*** ...... the amount of nature (e.g., % of greenspace, average greenness/NDVI) near residential areas or workplaces
 
