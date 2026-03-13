@@ -2,16 +2,16 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import pandas as pd
 
-default_paths_option1 = [
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_06_tract_500k.shp",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\population\usa_ppp_2020_UNadj_constrained_SF_proj_setnull.tif",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\ndvi\ndvi_s2_075_2019_10m_v2.tif",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\risk\baseline_incidence_rate_06075.shp",
-            r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
-            r"C:\Users\74007\Downloads\Stanford University\output_result"
-        ]
+# default_paths_option1 = [
+#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
+#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_06_tract_500k.shp",
+#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\population\usa_ppp_2020_UNadj_constrained_SF_proj_setnull.tif",
+#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\ndvi\ndvi_s2_075_2019_10m_v2.tif",
+#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\tree_cover\ESA_WorldCover_10m_2021_v200_N36W123_Map.tif",
+#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\risk\baseline_incidence_rate_06075.shp",
+#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
+#             r"C:\Users\74007\Downloads\Stanford University\output_result"
+#         ]
 
 # default_paths_option1 = [
 #     # AOI County Shapefile (aoi_adm1_path)
@@ -32,16 +32,16 @@ default_paths_option1 = [
 #     r"C:\Users\74007\Downloads\Stanford University\0_input_data\Batch\City\Boston"
 # ]
 
-# default_paths_option1 = [
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\Chicago_Boundary\Chicago_aoi_boundary.shp",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\Chicago_Boundary\chicago_aoi_censustract_reproj.shp",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\usa_UNadj_Chi_pp_proj_clipped.tif",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\chicago_NDVI_2013_prj_clipped.tif",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\TreeCover\Tree_Cover_Clipped.tif",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\BaselineRisk\chicago_aoi_baselinerisk_final.shp",
-#             r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
-#             r"C:\Users\74007\Downloads\Stanford University\output_result"
-#         ]
+default_paths_option1 = [
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\Chicago_Boundary\Chicago_aoi_boundary.shp",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\Chicago_Boundary\chicago_aoi_censustract_reproj.shp",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\usa_UNadj_Chi_pp_proj_clipped.tif",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\chicago_NDVI_2013_prj_clipped.tif",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\TreeCover\Tree_Cover_Clipped.tif",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\data_Erik\BaselineRisk\chicago_aoi_baselinerisk_final.shp",
+            r"C:\Users\74007\Downloads\Stanford University\0_input_data\health_effect_size_table.xlsx",
+            r"C:\Users\74007\Downloads\Stanford University\output_result"
+        ]
 
 default_paths_option2 = [
     r"C:\Users\74007\Downloads\Stanford University\0_input_data\aoi\cb_2019_us_county_500k_06075_clip.shp",
