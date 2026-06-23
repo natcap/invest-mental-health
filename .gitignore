@@ -1,3 +1,31 @@
+
+
+## code
+code_ref_*
+test.R
+*.tif
+**/__pycache__/
+*.lnk
+*.xml
+
+
+## others
+data/
+figures/
+figs/
+results/
+processing/
+*.mxd
+*.gslides
+*.gdoc
+
+
+## GUI files -------------------------------------------
+.venv
+build
+## -----------------------------------------------------
+
+
 # History files
 .Rhistory
 .Rapp.history

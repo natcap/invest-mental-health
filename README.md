@@ -19,6 +19,16 @@ invest-mental-health/
       ├── nature-availability/ 
       ├── nature-accessibility/
       ├── nature-visibility/
+      ├── 
+      ├── 
+      |   # manuscript - US 500 cities
+      ├── 
+      ├── 00b1-aoi-places-in-metro.ipynb
+      ├── 00b2-generate-individual-aoi.ipynb
+      ├── 04-health-baseline.Rmd
+      ├── 10a-basic_data_desc_health_tcc_ndvi.ipynb   #
+      ├── 
+      
   ├── data/ 
       ├── raw
       ├── intermediate
