@@ -10,7 +10,7 @@
 
 ## General information 
 * [Mental health model design doc](https://docs.google.com/document/d/1B68zhzlO5tY0L8uDSnFGt1CxBpBEjGu6J2_7XAxfV9k/edit?usp=sharing)
-* [Data and log doc](https://docs.google.com/document/d/1h3M5kNG7UyWXREg6LEhTfY2tvIyI1dRjxHbpa8VTEEM/edit?usp=sharing)
+* [Data and log doc (internal use only)](https://docs.google.com/document/d/1h3M5kNG7UyWXREg6LEhTfY2tvIyI1dRjxHbpa8VTEEM/edit?usp=sharing)
 
 ## Directory structure
 ```
@@ -44,7 +44,7 @@ invest-mental-health/
 
 Urban nature exposure can be measured in different ways. Here, we present the three most commonly used nature exposure measurements that relate to mental health outcomes. 
 
-Detailed description can be found in this [Google Slide](https://docs.google.com/presentation/d/189DM6Cf0j2CCCwn8CQ9EbI6i2mIGPo2Xb-0KmNzHA6s/edit?usp=sharing)
+Detailed description can be found in this [Google Slide, (internal use only)](https://docs.google.com/presentation/d/189DM6Cf0j2CCCwn8CQ9EbI6i2mIGPo2Xb-0KmNzHA6s/edit?usp=sharing)
 
 * ***nature availability*** ...... the amount of nature (e.g., % of greenspace, average greenness/NDVI) near residential areas or workplaces
 
@@ -72,6 +72,7 @@ Detailed description can be found in this [Google Slide](https://docs.google.com
 
 
 ## Key References
+- Li, Y., Mao, Y., Mandle, L., Rydström, A., Remme, R.P., Lan, X., Wu, T., Song, C., Lu, Y., Nadeau, K.C., Meyer-Lindenberg, A., Daily, G.C., Guerry, A.D., 2025. [Acute mental health benefits of urban nature](https://doi.org/10.1038/s44284-025-00286-y). ***Nature Cities*** 2, 720–731. https://doi.org/10.1038/s44284-025-00286-y
 - Bratman, G.N., Anderson, C.B., Berman, M.G., Cochran, B., Vries, S. de, Flanders, J., Folke, C., Frumkin, H., Gross, J.J., Hartig, T., Kahn, P.H., Kuo, M., Lawler, J.J., Levin, P.S., Lindahl, T., Meyer-Lindenberg, A., Mitchell, R., Ouyang, Z., Roe, J., Scarlett, L., Smith, J.R., Bosch, M. van den, Wheeler, B.W., White, M.P., Zheng, H., Daily, G.C., 2019. [Nature and mental health: An ecosystem service perspective](https://advances.sciencemag.org/content/5/7/eaax0903). ***Science Advances*** 5, eaax0903. https://doi.org/10.1126/sciadv.aax0903
 - Remme, R.P., Frumkin, H., Guerry, A.D., King, A.C., Mandle, L., Sarabu, C., Bratman, G.N., Giles-Corti, B., Hamel, P., Han, B., Hicks, J.L., James, P., Lawler, J.J., Lindahl, T., Liu, H., Lu, Y., Oosterbroek, B., Paudel, B., Sallis, J.F., Schipperijn, J., Sosič, R., Vries, S. de, Wheeler, B.W., Wood, S.A., Wu, T., Daily, G.C., 2021. [An ecosystem service perspective on urban nature, physical activity, and health](https://www.pnas.org/content/118/22/e2018472118). ***PNAS*** 118. https://doi.org/10.1073/pnas.2018472118
 
