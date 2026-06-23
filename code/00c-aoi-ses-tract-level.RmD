@@ -13,6 +13,8 @@ editor_options:
 ```{r}
 rm(list = ls())
 
+getwd()
+
 source("./code/_dir_packages.R")
 
 library(sf)
@@ -368,4 +370,7 @@ map <-
 f <- paste0(dir.figures, "acs_tract_urban_facets_", v, ".png")
 tmap_save(tm = map, filename = f, dpi = 300, width = 180, height = 150, units = "mm")
 ```
+
+
+
 
