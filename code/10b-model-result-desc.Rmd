@@ -1,0 +1,561 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+
+# Setup
+
+```{r setup, include=FALSE}
+
+rm(list = ls())
+
+library(readr)
+library(sf)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+require(scales) # to access break formatting functions
+
+ymd <- format(Sys.time(), "%Y%m%d"); ymd
+
+dir.desc  <- './data/data_desc'
+dir.batch <- 'G:/Shared drives/invest-health/City'
+dir.500   <- 'G:/Shared drives/invest-health/City500'
+```
+
+
+
+# Data
+
+
+
+```{r - pop}
+
+dir.aois  <- "./data/aoi/places_in_or_touching_metros_487.shp"
+
+aois <- st_read(dir.aois) %>% st_drop_geometry()
+
+```
+
+
+### test data - 15 cities
+
+```{r - baseline data}
+f <- file.path(dir.desc, 'ndvi_stats.csv')
+ndvi <- read_csv(f, show_col_types = FALSE) 
+
+
+f <- file.path(dir.desc, 'treecover_stats.csv')
+treecover <- read_csv(f, show_col_types = FALSE)
+
+
+f <- file.path(dir.desc, 'prevalence_aoi_stats.csv')
+prev_aoi <- read_csv(f, show_col_types = FALSE) %>%
+  rename(file_path = file) %>%
+  mutate(
+    city = file_path |> as.character() |> basename() |>
+      gsub("(?i)\\.shp$", "", x = _, perl = TRUE) |>
+      sub("^prevalence_aoi_", "", x = _)
+  )
+```
+
+
+
+
+
+```{r - model output}
+
+f <- file.path(dir.desc, 'Prev_case_stats.csv')
+prev_case <- read_csv(f, show_col_types = FALSE)
+
+
+f <- file.path(dir.desc, 'Prev_cost_stats.csv')
+prev_cost <- read_csv(f, show_col_types = FALSE)
+
+```
+
+
+
+```{r - merge data}
+
+dat <- ndvi %>%
+  select(city, mean) %>%
+  rename(ndvi_mean = mean) %>%
+  left_join(treecover %>% select(city, mean) %>% rename(treecover_mean = mean), by = c('city')) %>%
+  left_join(prev_aoi  %>% select(city, mean) %>% rename(risk_base_mean = mean), by = c('city')) %>% 
+  left_join(prev_case %>% select(city, total_value) %>% rename(total_case = total_value), by = c('city')) %>%
+  left_join(prev_cost %>% select(city, total_value) %>% rename(total_cost = total_value), by = c('city')) %>%
+  mutate(
+    treecover_target = 30,
+    treecover_gap = treecover_target - treecover_mean,
+    total_case_million = total_case / 1e6,
+    total_cost_million = total_cost / 1e6,
+  )
+```
+
+
+
+
+### US-500
+
+```{r - helper data}
+library(sf)
+library(ggplot2)
+library(rnaturalearth)
+library(dplyr)
+
+# --- 1. MOCK DATA CREATION (Replace with your actual CSV loading) ---
+# If loading from file: df_city <- read.csv("your_data.csv")
+
+
+# --- 2. PREPARE THE BASEMAP ---
+# Download US state boundaries
+us_states <- ne_states(country = "united states of america", returnclass = "sf")
+
+# Filter out Alaska and Hawaii for a cleaner "Lower 48" view
+# (EPSG:5070 distorts them if not moved using specialized functions)
+us_mainland <- us_states %>% 
+  filter(!name %in% c("Alaska", "Hawaii"))
+
+# Reproject basemap to US Albers Equal Area (EPSG:5070)
+us_mainland <- st_transform(us_mainland, crs = 5070)
+
+```
+
+
+```{r fitting}
+
+f <- file.path(dir.500, 'Sigmoid_Smart_Fittingv2', 'fitting_results_20260224_114239.csv')
+df_bat <- readr::read_csv(f, show_col_types = f)
+
+
+
+library(ggplot2)
+
+# Create a reusable function
+plot_histogram <- function(data, variable, bins = 15, var_label = NULL) {
+  
+  # Use variable name if label not provided
+  if (is.null(var_label)) var_label <- variable
+  
+  # Calculate mean
+  mean_val <- mean(data[[variable]], na.rm = TRUE)
+  
+  # Create plot
+  ggplot(data, aes(x = .data[[variable]])) +
+    geom_histogram(bins = bins, 
+                   fill = "#69b3a2", 
+                   color = "white",
+                   alpha = 0.8) +
+    geom_vline(aes(xintercept = mean_val),
+               color = "red", 
+               linetype = "dashed", 
+               linewidth = 1) +
+    annotate("text", 
+             x = mean_val, 
+             y = Inf, 
+             label = paste("Mean =", round(mean_val, 2)),
+             vjust = 1.5, 
+             hjust = -0.1,
+             color = "red",
+             size = 4) +
+    labs(x = var_label,
+         y = "Count") +
+    theme_classic() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+          plot.subtitle = element_text(hjust = 0.5))
+}
+
+
+names(df_bat)
+
+# Use the function
+p_tc <- plot_histogram(df_bat, "tc_mean", bins = 15, "TC Mean")
+p_ndvi <- plot_histogram(df_bat, "ndvi_mean", bins = 15, "NDVI Mean")
+
+p_n <- plot_histogram(df_bat, variable = "n_tracts", bins = 30, var_label = "N tracts")
+p_r2 <- plot_histogram(df_bat, variable = "r_squared", bins = 20, var_label = "R squared")
+
+library(ggpubr)
+ggarrange(p_n, p_tc, p_ndvi, p_r2, nrow = 2, ncol = 2)
+```
+
+
+```{r}
+
+library(dplyr)
+
+df_bat <- df_bat %>%
+  mutate(n_tracts_cat = ntile(n_tracts, 4),
+         n_tracts_cat = factor(n_tracts_cat,
+                              levels = 1:4,
+                              labels = c("Low", "Medium", "High", "Very High")))
+
+
+## D1-D10 for Deciles or Percentile Labels
+df_bat <- df_bat %>%
+  mutate(n_tracts_cat = ntile(n_tracts, 10),
+         n_tracts_cat = factor(n_tracts_cat,
+                              levels = 1:10,
+                              labels = paste0("D", 1:10)))
+
+# df_bat <- df_bat %>%
+#   mutate(n_tracts_cat = ntile(n_tracts, 10),
+#          n_tracts_cat = factor(n_tracts_cat,
+#                               levels = 1:10,
+#                               labels = c("0-10%", "10-20%", "20-30%", 
+#                                        "30-40%", "40-50%", "50-60%",
+#                                        "60-70%", "70-80%", "80-90%", 
+#                                        "90-100%")))
+
+
+library(ggplot2)
+library(dplyr)
+
+# Calculate overall and category means
+overall_mean <- mean(df_bat$r_squared, na.rm = TRUE)
+cat_means <- df_bat %>%
+  group_by(n_tracts_cat) %>%
+  summarise(mean_val = mean(r_squared, na.rm = TRUE))
+
+ggplot(df_bat, aes(x = r_squared, fill = n_tracts_cat)) +
+  geom_histogram(bins = 15, 
+                 color = "white",
+                 alpha = 0.8) +
+  facet_wrap(~n_tracts_cat, ncol = 2) +
+  labs(title = "Distribution of TC Mean by n_tracts Category",
+       x = "TC Mean",
+       y = "Count") +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        legend.position = "none",
+        strip.background = element_rect(fill = "gray90"),
+        strip.text = element_text(face = "bold"))
+```
+
+
+```{r}
+
+# Create plot
+ggplot(df_bat, aes(x = r_squared, fill = n_tracts_cat)) +
+  geom_histogram(bins = 15, 
+                 color = "white",
+                 alpha = 0.6,
+                 position = "identity") +
+  geom_vline(xintercept = overall_mean,
+             color = "black",
+             linetype = "solid",
+             linewidth = 1) +
+  geom_vline(data = cat_means,
+             aes(xintercept = mean_val, color = n_tracts_cat),
+             linetype = "dashed",
+             linewidth = 0.5) +
+  
+  facet_wrap(~n_tracts_cat, ncol = 2) +
+  
+  # scale_fill_brewer(palette = "Paired") +   # Paired, Set3 (n = 11)
+  # scale_color_brewer(palette = "Paired") +
+  
+  scale_fill_viridis_d(option = "turbo") +
+  scale_color_viridis_d(option = "turbo") +
+  
+  annotate("text", x = overall_mean, y = Inf,
+           label = paste("Overall Mean =", round(overall_mean, 2)),
+           vjust = 1.5, hjust = -0.05, size = 3) +
+  labs(title = "Distribution of by n_tracts Category",
+       subtitle = "Solid line: overall mean | Dashed lines: category means",
+       x = "TC Mean",
+       y = "Count",
+       fill = "n_tracts Category",
+       color = "n_tracts Category") +
+  theme_bw() +
+  theme(
+    legend.position = 'none',
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 9))
+
+
+f <- paste0('./figures/fitting_curve_byNtract_', ymd, '.png')
+ggsave(f, width = 8, height = 6, units = 'in', dpi = 300)
+```
+
+
+
+# Viz
+
+```{r - plot}
+library(ggplot2)
+library(ggrepel)
+
+
+ggplot(dat, aes(x = treecover_mean, 
+                y = total_case_million, 
+                # color = treecover_gap,
+                size = treecover_gap, 
+                label = city)) +
+  geom_point(
+    color = "orange",
+    # size = 3
+    # shape = 1,  # open circle
+    # shape = 19, # filled circle
+    shape = 16, 
+    alpha = .7
+    ) +
+  # geom_text(vjust = -1, size = 3, show.legend = F) +  # labels slightly above points
+  geom_text_repel(size = 3, 
+                  box.padding = 0.6,   # space around text
+                  point.padding = 0.2, # space around points
+                  segment.color = "grey80",  # color of line connecting label to point
+                  max.overlaps = Inf, 
+                  show.legend = F) +
+  # scale_color_gradient(low = "lightblue", high = "darkblue") +
+  scale_size_binned(nice.breaks = T) +
+  theme_minimal() +
+  guides(
+    size = guide_legend(title = "Treecover Gap"),
+    color = guide_legend(title = "Treecover Gap")) +
+  # coord_flip() +
+  labs(
+    x = "Tree Cover Mean (%)",
+    y = "Total preventable cases (in millions)",
+    color = "Treecover Gap",
+    title = "Tree Cover vs Total Preventable Cases"
+  ) +
+  theme(
+    legend.box.background = element_rect(colour = "gray", fill = "gray95"), 
+    legend.position = c(0.9, 0.15))
+
+f <- paste0('./figures/treecover_vs_total_case_', ymd, '.png')
+ggsave(f, width = 8, height = 6, units = 'in', dpi = 300)
+```
+
+```{r}
+ggplot(dat) +
+  geom_segment(aes(x = treecover_mean, xend = treecover_target,
+                   y = total_case, yend = total_case),
+               arrow = arrow(length = unit(0.15, "cm")),
+               color = "gray80") +
+  geom_point(aes(x = treecover_mean, y = total_case), color = "blue", size = 3) +
+  geom_point(aes(x = treecover_target, y = total_case), color = "red", size = 3) +
+  geom_text(aes(x = treecover_mean, y = total_case, label = city),
+            vjust = -0.5, size = 3) +
+  theme_minimal() +
+  coord_flip() + 
+  labs(
+    x = "Tree Cover (%)",
+    y = "Total Case",
+    title = "Tree Cover vs Total Case (Blue = Current, Red = Target)"
+  )
+
+
+```
+
+
+
+
+### Batch results
+
+  This is the older data. 
+  
+```{r city, eval=FALSE, include=FALSE}
+
+f <- file.path(dir.batch, 'tree_cover_batch_results.xlsx')
+df_bat <- readxl::read_excel(f) 
+
+
+## given the large difference in pop across cities, we calculated prev cases per 1000 city population 
+
+df_batch <- df_bat %>%
+  mutate(city = gsub('_', ' ', city)) %>%
+  left_join(.,
+            aois %>% select(GEOID_PLAC, NAME_PLACE, POP2021_le), 
+            by = c('city' = 'NAME_PLACE')
+            ) %>%
+  rename('POP2021_city' = 'POP2021_le') %>%
+  mutate(preventable_cases_per1kpop = round(preventable_cases / POP2021_city * 1000, digits = 2))
+```
+
+
+  
+
+```{r - plot}
+
+# df: columns x, y, city
+df_batch_last <- df_batch %>%
+  group_by(city) %>%
+  slice_max(target_treecover_pct, n = 1, with_ties = FALSE)  # last x per city
+
+df_batch %>%
+  ggplot(., 
+         aes(x = target_treecover_pct, 
+             y = preventable_cases_per1kpop, 
+             # size = current_treecover_pct, 
+             color = city)) +
+  geom_line(
+    show.legend = FALSE
+  ) + 
+  geom_point(
+    # color = "orange",
+    # size = 3
+    # shape = 1,  # open circle
+    # shape = 19, # filled circle
+    show.legend = FALSE,
+    shape = 16, 
+    alpha = .7
+    ) +
+  scale_size_binned(nice.breaks = T) +
+  ggrepel::geom_text_repel(
+    data = df_batch_last, 
+    aes(label = city),
+    hjust = -0.3, vjust = 0.2,
+    
+    box.padding = 0.6,   # space around text
+    point.padding = 0.2, # space around points
+    segment.color = "grey80",  # color of line connecting label to point
+    max.overlaps = Inf, 
+    
+    
+    show.legend = FALSE
+    ) +
+  # geom_text(
+  #   data = df_batch_last, 
+  #   aes(label = city),
+  #   hjust = -0.1, vjust = 0.5, show.legend = FALSE
+  #   ) +
+  expand_limits(x = max(df_batch_last$preventable_cases_per1kpop) * 1.05) +   # space for labels
+  theme_minimal() +
+  theme(
+    # legend.position = c(0.9, 0.15),
+    legend.box.background = element_rect(colour = "gray", fill = "gray95"), 
+    )
+```
+
+
+
+## City500
+
+This is the new data. 
+  
+```{r data}
+
+f <- file.path(dir.500, 'City_Folder_By_Num', 'tract_level_pd_summary_20251106_174054.csv')
+df_bat <- readr::read_csv(f, show_col_types = f)
+
+names(df_bat)
+```
+
+
+```{r load point shp}
+
+f <- file.path('G:/Shared drives/invest-health', 'shp', 'aoi487_polylabel.gpkg')
+
+pt <- st_read(f)
+
+names(pt)
+
+# plot(pt[1])
+```
+
+
+```{r join}
+
+tcc_inc <- 10
+
+df_batch <- df_bat %>%
+  dplyr::filter(multiply_percent == tcc_inc) 
+
+
+df_city <- df_batch %>%
+  group_by(city) %>%
+  summarise_at(vars(total_pd_cases), sum, na.rm = TRUE) %>%
+  
+  ## add sf
+  left_join(x = pt,
+            y = ., 
+            by = c('GEOID_PLAC' = 'city')
+            ) %>%
+  rename('POP2021_city' = 'POP2021_le') %>%
+  mutate(pd_per1kpop = round(total_pd_cases / POP2021_city * 1000, digits = 2))
+
+
+```
+
+
+```{r hist}
+
+
+# --- 3. PREPARE YOUR CITY DATA ---
+# Convert dataframe to simple feature object (sf)
+# Note: coords expects c("Longitude", "Latitude") order!
+# cities_sf <- st_as_sf(df_city, coords = c("longitude", "latitude"), crs = 4326)
+cities_sf <- df_city
+
+hist(df_city$pd_per1kpop)
+```
+
+
+```{r map}
+# Reproject cities to match the basemap
+cities_sf <- st_transform(cities_sf, crs = 5070)
+
+# --- 4. PLOT WITH GGPLOT2 ---
+ggplot() +
+  # Layer A: Base Map
+  geom_sf(data = us_mainland, 
+          fill = "gray90", 
+          color = "white", 
+          size = 0.2) +
+  
+  # Layer B: City Points
+  geom_sf(data = cities_sf, 
+          aes(size = pd_per1kpop, 
+              fill = pd_per1kpop), 
+          shape = 21, 
+          color = "black",
+          stroke = 0.5,
+          alpha = 0.5) +
+  
+  # --- 5. STYLING ---
+  # # Color palette (Magma is high contrast and colorblind friendly)
+  # scale_color_viridis_c(option = "magma", 
+  #                       name = "Dead Cases",
+  #                       direction = -1) + # Darker = more cases
+  
+  # Size scaling
+  # scale_size_continuous(range = c(2, 8), name = "Dead Cases") +
+  
+  # --- IMPROVEMENT A: SIZE SCALING ---
+  # scale_size_area ensures 0 = size 0. max_size=12 makes the '8' big enough to see.
+  # breaks defines what shows in the legend.
+  scale_size_area(max_size = 8, breaks = c(0, 2, 3, 5, 7)) +
+  
+  
+  # --- IMPROVEMENT B: BINNED COLORS ---
+  # Using a binned scale ('viridis_b') makes distinct color steps
+  # distinct values are easier to read than a smooth gradient
+  scale_fill_viridis_b(option = "magma", direction = -1, breaks = c(1, 3, 5, 7)) +
+  
+  # Labels and Theme
+  labs(title = "US Cities: Distribution of Dead Cases",
+       subtitle = "Projected in US Albers Equal Area (EPSG:5070)") +
+  
+  
+  # Guide customization to merge size/fill into one clean legend
+  # guides(
+  #   size = guide_legend(title = "Dead Cases"),
+  #   fill = guide_legend(title = "Dead Cases")
+  # ) +
+  
+  theme_void() + # Removes axes and gridlines for a clean map look
+  theme(
+    legend.position = "right",
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5, color = "gray50")
+  )
+```
+
+

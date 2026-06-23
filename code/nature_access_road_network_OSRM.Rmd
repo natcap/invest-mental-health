@@ -1,0 +1,211 @@
+---
+title: "Untitled"
+author: "Yingjie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+# remotes::install_github("riatelab/osrm")
+library(osrm)
+packageVersion('osrm')
+library(sf)
+library(stringr)
+
+library(leaflet)
+```
+
+
+
+## example data
+
+```{r eval=FALSE, include=FALSE}
+pharmacy <- st_read(system.file("gpkg/apotheke.gpkg", package = "osrm"), 
+                    quiet = TRUE)
+travel_time <- osrmTable(loc = pharmacy)
+travel_time$durations[1:5,1:5]
+
+
+diag(travel_time$durations) <- NA
+median(travel_time$durations, na.rm = TRUE)
+
+
+pharmacy2 <- pharmacy %>%
+  st_transform(., 4326) %>%
+  cbind(.,  st_coordinates(.)) %>%
+  dplyr::rename('lat' = 'Y', 'lon' = 'X') 
+
+
+pharmacy2 %>%  
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers(~lon, ~lat, popup = ~id)
+```
+
+
+
+
+## Park poi
+
+### Park - sg
+```{r}
+f <- "D:/data/SafeGraph_Dewey/analysis_natcap/cbg2poi/poi_dewey/poi_nature_2019_06075.rds"
+
+park <- readRDS(file = f) %>%
+  dplyr::rename('lat' = 'latitude', 'lon' = 'longitude')
+
+
+park %>%  
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers(~lon, ~lat, popup = ~location_name) 
+```
+
+
+
+### Park - Park Serve
+```{r}
+f <- 'D:/natcap/Parkscore/ParkServe_shp_DataShare_05152019/ParkServe_shp_DataShare_05152019/ParkServe_Parks_05152019.shp'
+parkPS <- st_read(f) #%>%
+  # dplyr::rename('lat' = 'latitude', 'lon' = 'longitude') %>%
+
+parkPS_ <- parkPS %>%
+  select(-c(SUM_KIDSVC:SUM_HISP_S)) %>%
+  dplyr::filter(str_detect(Park_Place, 'San Francisco')) %>%
+  dplyr::filter(Park_Place == 'San Francisco city') 
+
+
+sf_use_s2(FALSE) # the input geometries are bad, and wrong spherically
+# library(spdep)
+# p1 <- st_make_valid(parkPS_)
+# all(st_is_valid(x1))
+# p2 <- spdep::poly2nb(p1) # snap not required
+
+
+p2_pts <- parkPS_ %>%
+  st_centroid(.) %>%
+  st_transform(., 4326) %>%
+  cbind(.,  st_coordinates(.)) %>%
+  dplyr::rename('lat' = 'Y', 'lon' = 'X') 
+
+p2_ply <- p2_pts %>%
+  st_drop_geometry() %>%
+  select(lat, lon) %>%
+  cbind(parkPS_, .) %>%
+  st_transform(., 4326) 
+  
+
+p2_ply %>% 
+  # st_geometry() %>%
+  leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>% 
+  addPolygons(color = "green", popup = ~Park_Name) %>%
+  addMarkers(~lon, ~lat, popup = ~Park_Size1)
+
+```
+
+
+
+### POI selected
+```{r}
+pois <- p2_pts
+```
+
+
+
+## shortest route between two points
+```{r}
+
+(route <- osrmRoute(src = pois[1, ], dst = pois[2, ], osrm.profile = 'foot')) ## "car", "bike" or "foot".
+plot(st_geometry(route))
+plot(st_geometry(pois[1:2,]), pch = 20, add = T, cex = 1.5)
+```
+
+
+```{r}
+# Create an interactive map
+str(route)
+
+d <- route %>% st_transform(., 4326)
+
+p_2 <- pois[1:2,]
+
+# d %>% 
+#   # st_geometry() %>%
+#   leaflet() %>%
+#   addProviderTiles("CartoDB.Positron") %>% 
+#   addPolylines(color = "green") 
+
+
+leaflet() %>%
+  addTiles() %>% 
+  addPolylines(data = d, color = "red") %>%
+  addMarkers(data = p_2, ~lon, ~lat, popup = ~Park_Name)
+```
+
+
+
+## shortest trip between a set of unordered points
+```{r eval=FALSE, include=FALSE}
+
+(trips <- osrmTrip(loc = pois[1:5, ], overview = "full"))
+mytrip <- trips[[1]]$trip
+# Display the trip
+plot(st_geometry(mytrip), col = c("black", "grey"), lwd = 2)
+plot(st_geometry(pois[1:5, ]), cex = 1.5, pch = 21, add = TRUE)
+text(st_coordinates(pois[1:5,]), labels = row.names(pois[1:5,]), 
+     pos = 2)
+```
+
+
+
+## the nearest point on the street network from any point
+```{r}
+
+pt_not_on_street_network <- c(-122.17306274332836, 37.43100281330438)
+(pt_on_street_network <- osrmNearest(loc = pt_not_on_street_network))
+
+
+pt_on_street_network %>%
+  cbind(., st_coordinates(.)) %>%
+  dplyr::rename('lat' = 'Y', 'lon' = 'X') %>%
+  leaflet() %>%
+  # addProviderTiles("CartoDB.Positron") %>%
+  # addPolylines(color = "green") %>%
+  addTiles() %>%
+  addMarkers(~lon, ~lat, popup = ~id)
+```
+
+
+## reachable regions
+```{r}
+## reachable within a given time span from a point and returns the reachable regions as polygons
+(iso <- osrmIsochrone(loc = pt_not_on_street_network, breaks = seq(0,15,5), osrm.profile = 'foot'))
+
+bks <-  sort(unique(c(iso$isomin, iso$isomax)))
+pals <- hcl.colors(n = length(bks) - 1, palette = "Light Grays", rev = TRUE)
+plot(iso["isomax"], breaks = bks, pal = pals, 
+     main = "Isochrones (in minutes)", reset = FALSE)
+points(x = pt_not_on_street_network[1], y = pt_not_on_street_network[2], pch = 4, lwd = 2, cex = 1.5)
+```
+
+
+```{r}
+iso_max <- iso["isomax"] %>% st_transform(., 4326)
+pt <- data.frame(lat = pt_not_on_street_network[2], lon = pt_not_on_street_network[1])
+
+
+leaflet() %>%
+  # addProviderTiles("CartoDB.Positron") %>% ## Add Third Party base map tiles
+  addTiles() %>%
+  addPolygons(data = iso_max, color = "green") %>%
+  addMarkers(data = pt, ~lon, ~lat)
+
+```
+
