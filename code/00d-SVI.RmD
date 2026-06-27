@@ -38,7 +38,7 @@ svi <- readr::read_csv(file = paste0(dir.svi, '/SVI_2022_US.csv'), show_col_type
 
 
 svi_sub <- svi %>%
-  select(1:E_HH, matches("(POV150|UNEMP|NOHSDP|AGE65|MINRTY)", ignore.case = TRUE)) %>%
+  select(1:E_HH, matches("(POV150|UNEMP|NOHSDP|AGE65|MINRTY|_THEME)", ignore.case = TRUE)) %>%
   ## remove `Flag` columns
   select(!starts_with('F_', ignore.case = F)) %>%
   ## remove margins of error
@@ -68,7 +68,7 @@ svi_sf <- st_read(dsn = gdb, layer = "SVI2022_US_tract")  # example layer name
 
 # 3) filter 
 svi_sf_sub <- svi_sf %>%
-  select(1:E_HH, matches("(POV150|UNEMP|NOHSDP|AGE65|MINRTY)", ignore.case = TRUE)) %>%
+  select(1:E_HH, matches("(POV150|UNEMP|NOHSDP|AGE65|MINRTY|_THEME)", ignore.case = TRUE)) %>%
   ## remove `Flag` columns
   select(!starts_with('F_', ignore.case = F)) %>%
   ## remove margins of error
@@ -109,6 +109,9 @@ names(svi_sf_sub)
 vs <- stringr::str_subset(names(svi_sf_sub), "^EP")
 vs
 
+# remove the variables ending in _q from the vector
+library(stringr)
+vs <- vs[!str_detect(vs, "_q$")]
 
 p <- svi_sf_sub %>%
   filter(STCNTY %in% c(CNTY_i, '06075')) %>%
@@ -142,8 +145,14 @@ svi_sf_sub_out <- svi_sf_sub %>%
   select(-any_of(c("E_POV150", "E_UNEMP", "E_NOHSDP", "E_AGE65", "E_MINRTY" )))
 
 # write (create/overwrite file)
-st_write(svi_sf_sub_out, dsn = paste0(dir.gd, 'SVI_2022_US_tract.gpkg'), layer = "SVI_2022_US_tract", delete_dsn = FALSE, delete_layer = TRUE)
+st_write(svi_sf_sub_out, dsn = paste0(dir.gd, 'SVI_2022_US_tract.gpkg'), layer = "SVI_2022_US_tract", delete_dsn = TRUE, delete_layer = TRUE)
 # st_write(svi_sf_sub_out, dsn = paste0(dir.gd, 'SVI_2022_US_tract.shp'), delete_dsn = TRUE)
+
+
+# save a csv copy 
+svi_sf_sub_out_df <- svi_sf_sub_out %>%
+  st_drop_geometry()
+readr::write_csv(svi_sf_sub_out_df, file = paste0(dir.gd, 'SVI_2022_US_tract.csv'))
 ```
 
 
