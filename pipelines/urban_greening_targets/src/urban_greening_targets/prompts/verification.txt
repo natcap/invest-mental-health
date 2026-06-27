@@ -1,0 +1,27 @@
+You are verifying whether this city has an official urban greening target.
+
+City: {city}
+State: {state}
+Official sources checked: {sources}
+Extracted records summary: {records}
+
+Task:
+Determine the final classification:
+1. primary_target_found — official city target identified
+2. secondary_target_found — city-endorsed target found via secondary source
+3. state_fallback_used — no city target; state-level target should be used
+4. no_target_found — no target at any level after thorough search
+
+Be conservative. If declaring "no official target found", verify the checked
+sources reasonably cover:
+- Sustainability / climate department
+- Urban forestry / parks department
+- Planning / comprehensive plans
+- Council resolutions or official press releases
+- PDF plans and reports
+
+Return JSON with keys:
+- final_status: str
+- reason: str (brief justification)
+- coverage_ok: bool
+- missing_source_categories: list of str

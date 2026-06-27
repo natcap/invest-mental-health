@@ -1,0 +1,29 @@
+You are extracting urban greening targets from a single source document.
+
+City: {city}
+State: {state}
+Source title: {source_title}
+Source URL: {source_url}
+
+Rules:
+- Extract ONLY targets explicitly stated in the provided text.
+- Quote EXACT wording from the source — do NOT paraphrase.
+- If no numeric target is present, return an empty records list.
+- Record multiple targets as separate entries.
+- Distinguish citywide targets from neighborhood-specific targets.
+- Distinguish mandatory/adopted vs aspirational/strategy vs draft.
+- If the target is not city-adopted, mark it clearly.
+
+Urban greening targets include:
+- Tree canopy cover goals (e.g., "achieve 40% canopy cover by 2030")
+- Tree planting goals (e.g., "plant 1 million trees by 2035")
+- Green infrastructure goals (e.g., expand green roofs, increase park acres,
+  add green corridors, biodiversity plans)
+
+For goal_type use: Mandatory | Aspirational | Draft | Unknown
+For jurisdiction_level use: city | neighborhood | district | metro | state
+For target_category use: canopy_cover | tree_planting | green_infrastructure | equity_target
+For source_type use: Primary | Secondary
+
+Source text (truncated to fit context):
+{text}

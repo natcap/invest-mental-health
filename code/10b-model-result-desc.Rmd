@@ -22,9 +22,13 @@ require(scales) # to access break formatting functions
 
 ymd <- format(Sys.time(), "%Y%m%d"); ymd
 
+
+dir.g <- 'G:/Shared drives' # on Windows
+dir.g <- '/Users/yingjiel/Library/CloudStorage/GoogleDrive-yingjiel@stanford.edu/Shared drives' # on Mac
+
 dir.desc  <- './data/data_desc'
-dir.batch <- 'G:/Shared drives/invest-health/City'
-dir.500   <- 'G:/Shared drives/invest-health/City500'
+dir.batch <- file.path(dir.g, 'invest-health/City')
+dir.500   <- file.path(dir.g, 'invest-health/City500')
 ```
 
 

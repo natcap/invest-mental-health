@@ -1,40 +1,20 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=Yingjie4Science.invest-mental-health)
 
-# InVEST mental health model
-
-<p align="center">
-  <img src="./man/images/nature_health.png"/>
-</p>
-
-
-## General information 
-* [Mental health model design doc](https://docs.google.com/document/d/1B68zhzlO5tY0L8uDSnFGt1CxBpBEjGu6J2_7XAxfV9k/edit?usp=sharing)
-* [Data and log doc (internal use only)](https://docs.google.com/document/d/1h3M5kNG7UyWXREg6LEhTfY2tvIyI1dRjxHbpa8VTEEM/edit?usp=sharing)
+# InVEST mental health model application to US cities 
 
 ## Directory structure
 ```
 invest-mental-health/
   ├── code/
-      ├── nature-availability/ 
-      ├── nature-accessibility/
-      ├── nature-visibility/
+      ├── nature-exposure/ 
+      ├── greening-targets/
       ├── 
-      ├── 
-      |   # manuscript - US 500 cities
-      ├── 
-      ├── 00b1-aoi-places-in-metro.ipynb
-      ├── 00b2-generate-individual-aoi.ipynb
-      ├── 04-health-baseline.Rmd
-      ├── 10a-basic_data_desc_health_tcc_ndvi.ipynb   #
-      ├── 
-      
   ├── data/ 
       ├── raw
       ├── intermediate
       ├── output
-      ├── para_nature_health            # parameters for modeling nature-health relation
-      ├── example                       # example data for modeling
+      ├── 
   ├── docs/
   ├── figures/
 
@@ -42,33 +22,29 @@ invest-mental-health/
 
 ## Nature Exposure
 
-Urban nature exposure can be measured in different ways. Here, we present the three most commonly used nature exposure measurements that relate to mental health outcomes. 
+## Urban Greening Targets (CLI Pipeline)
 
-Detailed description can be found in this [Google Slide, (internal use only)](https://docs.google.com/presentation/d/189DM6Cf0j2CCCwn8CQ9EbI6i2mIGPo2Xb-0KmNzHA6s/edit?usp=sharing)
+The full scraping + extraction pipeline is available at:
 
-* ***nature availability*** ...... the amount of nature (e.g., % of greenspace, average greenness/NDVI) near residential areas or workplaces
+`pipelines/urban_greening_targets/`
 
-* ***nature accessibility*** ...... see [InVEST Urban Nature Access model](https://storage.googleapis.com/releases.naturalcapitalproject.org/invest-userguide/latest/en/urban_nature_access.html)
+This module contains all stages (A-G) and exports city targets to CSV/JSON/Markdown.
 
-* ***nature visibility*** ...... the visible green considering topography and buildings
+Quick start:
 
+```bash
+cd pipelines/urban_greening_targets
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+PYTHONPATH=src python -m urban_greening_targets.cli run --all
+PYTHONPATH=src python -m urban_greening_targets.cli export
+```
 
-<p align="center">
-  <img src="./man/images/nature_exposure_type_illustration.png"/>
-</p>
+Outputs are written to:
 
-
-*<div align="right"> Modified from [Labib et al 2021](https://doi.org/10.1016/j.scitotenv.2021.147919) </div>*
-
-
-## Mental Health
-
-<TBD ...>
-
-
-## Nature-Health Model Integration 
-
-<TBD ...>
+`pipelines/urban_greening_targets/data/output/`
 
 
 ## Key References

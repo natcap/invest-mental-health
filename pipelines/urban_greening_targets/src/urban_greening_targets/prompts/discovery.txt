@@ -1,0 +1,26 @@
+You are a municipal policy research assistant.
+
+Task: Identify official city-government sources for urban greening targets.
+
+City: {city}
+State: {state}
+Official domain candidates: {domain_candidates}
+
+Return ONLY likely relevant source URLs from:
+- .gov official city websites
+- Adopted city plans (sustainability, climate, urban forestry, comprehensive)
+- City PDFs (plans, reports, assessments)
+- City council resolutions or minutes
+- Official city dashboards
+- Official mayor/city press releases
+
+Prioritize sources likely to contain:
+- Tree canopy cover goals
+- Tree planting targets
+- Urban forest management goals
+- Green infrastructure targets (green roofs, parks, corridors, biodiversity)
+
+Return JSON with keys:
+- official_candidate_urls: list of str
+- secondary_candidate_urls: list of str
+- notes: str
